@@ -57,7 +57,7 @@ class RandomPS:
 
     
     def better(self, u, u_slt, k):
-        choice = np.random.choice([i for i in range(1, 6)], size=1, p=[0.1, 0.1, 0.1, 0.1, 0.6])
+        choice = np.random.choice([i for i in range(1, 6)], size=1, p=[0.2, 0.2, 0.2, 0.2, 0.2])
 
         if choice == 1:
             return self.criteria_1(u, u_slt)
@@ -91,15 +91,16 @@ class RandomPS:
                 u_slt = ()
 
                 for u in free:
-                    u_dmnd = self.carp.graph.edge_demand[u[0]][u[1]]
-                    if load[k] + u_dmnd <= capacity:
-                        d = self.carp.graph.mul_sp[i][u[0]] 
-                        if d < d_min:
-                            d_min = d
-                            u_slt = u
-                        elif d == d_min and self.better(u, u_slt, k):
-                            u_slt = u
+                    d = self.carp.graph.mul_sp[i][u[0]] 
+                    if d < d_min:
+                        d_min = d
+                        u_slt = u
+                    elif d == d_min and self.better(u, u_slt, k):
+                        u_slt = u
+                   
                 if not free or d_min == math.inf:
+                    break
+                if load[k] + self.carp.graph.edge_demand[u_slt[0]][u_slt[1]] > capacity:
                     break
                 road[k].append(u_slt)
                 free.remove(u_slt)
