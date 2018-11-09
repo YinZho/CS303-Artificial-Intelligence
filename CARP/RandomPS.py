@@ -4,7 +4,6 @@ import numpy as np
 class RandomPS:
     def __init__(self, carp):
         self.carp = carp
-        
 
     def construct_free(self):
         free = list()
@@ -58,7 +57,7 @@ class RandomPS:
 
     
     def better(self, u, u_slt, k):
-        choice = np.random.choice([i for i in range(1, 6)], size=1, p=[0.2, 0.2, 0.2, 0.2, 0.2])
+        choice = np.random.choice([i for i in range(1, 6)], size=1, p=[0.1, 0.1, 0.1, 0.1, 0.6])
 
         if choice == 1:
             return self.criteria_1(u, u_slt)
@@ -114,7 +113,8 @@ class RandomPS:
             rtn_cost = self.carp.graph.mul_sp[i][1]
             cost[k] = cost[k] + rtn_cost
             k = k + 1
-        self.display(road, cost)
+        return(sum(cost), road)
+        # self.display(road, cost)
 
     def display(self, road, cost):
         print("***road and cost***")
@@ -127,7 +127,7 @@ class RandomPS:
             mssg += "0,"
         mssg = mssg[0: -1]
         print(mssg)
-        print("q " + str(sum(cost)))
+        print("q " + str(cost))
 
 
         cnt = 0
@@ -140,7 +140,18 @@ class RandomPS:
         print("\n***vehicles cnt***")
         print(str(len(road)))
 
+
+    def run(self, rpt_time):
+        best_res = None
+        for _ in range(rpt_time):
+            cost, road = self.path_scanning()
+            if best_res is None:
+                best_res = (cost, road)
+            if cost < best_res[0]:
+                best_res = (cost, road)
         
+        self.display(best_res[1], best_res[0])
+    
 
         
     
