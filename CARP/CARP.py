@@ -48,12 +48,12 @@ if __name__ == "__main__":
     # parse_res = parser.parse_args()
 
     strt_time = time.time()
-    dict = read_file("./test_case/egl-s1-A.dat")
+    dict = read_file("./CARP_samples/egl-s1-A.dat")
     
     carp = CARP(dict['name'], dict['vertices'], dict['depot'], dict['required_edges'], dict['non_required_edges'], dict['vehicles'], dict['capacity'], dict['total_cost_of_required_edges'], dict['matrix'])
     randomPS = RandomPS(carp)
   
-    randomPS.run(200)
+    randomPS.run(500)
     end_time = time.time()
     print("***time cnt***")
     print(str(end_time - strt_time))
