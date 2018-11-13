@@ -65,7 +65,7 @@ class RandomPS:
         # self.display(road, cost)
 
     def display(self, road, cost):
-        print("***road and cost***")
+        # print("***road and cost***")
         
         mssg = "s "
         for r in road:
@@ -78,15 +78,15 @@ class RandomPS:
         print("q " + str(cost))
 
 
-        cnt = 0
-        for i in road:
-               cnt = cnt + len(i)
-        print("\n***edge cnt***")
-        print(str(cnt)) 
+        # cnt = 0
+        # for i in road:
+        #        cnt = cnt + len(i)
+        # print("\n***edge cnt***")
+        # print(str(cnt)) 
 
-        cnt = 0
-        print("\n***vehicles cnt***")
-        print(str(len(road)))
+        # cnt = 0
+        # print("\n***vehicles cnt***")
+        # print(str(len(road)))
 
 
     def run(self, rpt_time):
