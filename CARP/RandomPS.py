@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import random
 
 class RandomPS:
     def __init__(self, carp):
@@ -88,20 +89,22 @@ class RandomPS:
             i = 1
             while True:
                 d_min = math.inf
-                u_slt = ()
+                u_slts = list()
 
                 for u in free:
                     d = self.carp.graph.mul_sp[i][u[0]] 
                     if d < d_min:
                         d_min = d
-                        u_slt = u
-                    elif d == d_min and self.better(u, u_slt, k):
-                        u_slt = u
+                        u_slts = [u]
+                    elif d == d_min:
+                        u_slts.append(u)
                    
                 if not free or d_min == math.inf:
                     break
+                u_slt = random.choice(u_slts)
                 if load[k] + self.carp.graph.edge_demand[u_slt[0]][u_slt[1]] > capacity:
                     break
+                
                 road[k].append(u_slt)
                 free.remove(u_slt)
                 free.remove((u_slt[1], u_slt[0]))
