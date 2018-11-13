@@ -15,62 +15,6 @@ class RandomPS:
                     free.append((j, i))
         return free
 
-    # criteria 1 : minimization ratio cost(i, j)/rmn_dmnd(i, j) once (i, j) is treated; 
-    def criteria_1(self, u, u_slt):
-        u_cost = self.carp.graph.adj_matrix[u[0]][u[1]]
-        u_dmnd = self.carp.graph.edge_demand[u[0]][u[1]]
-        u_slt_cost = self.carp.graph.adj_matrix[u_slt[0]][u_slt[1]]
-        u_slt_dmnd = self.carp.graph.edge_demand[u_slt[0]][u_slt[1]]
-        
-        return u_cost / u_dmnd < u_slt_cost / u_slt_dmnd
-
-    # criteria 2 : maximization ratio cost(i, j)/rmn_dmnd(i, j); 
-    def criteria_2(self, u, u_slt):
-        u_cost = self.carp.graph.adj_matrix[u[0]][u[1]]
-        u_dmnd = self.carp.graph.edge_demand[u[0]][u[1]]
-        u_slt_cost = self.carp.graph.adj_matrix[u_slt[0]][u_slt[1]]
-        u_slt_dmnd = self.carp.graph.edge_demand[u_slt[0]][u_slt[1]]
-        
-        return u_cost / u_dmnd > u_slt_cost / u_slt_dmnd
-
-    # criteria 3 : maximize cost(j, depot)
-    def criteria_3(self, u, u_slt):
-        u_end_depot = self.carp.graph.mul_sp[u[1]][self.carp.depot]
-        u_slt_end_depot = self.carp.graph.mul_sp[u_slt[1]][self.carp.depot] 
-
-        return u_end_depot > u_slt_end_depot
-
-    # criteria 4 : minimize cost(j, depot)
-    def criteria_4(self, u, u_slt):
-        u_end_depot = self.carp.graph.mul_sp[u[1]][self.carp.depot]
-        u_slt_end_depot = self.carp.graph.mul_sp[u_slt[1]][self.carp.depot] 
-
-        return u_end_depot < u_slt_end_depot
-        
-    # if vehicls is less than half-full than criteria 3
-        # else criteria 4
-    def criteria_5(self, u, u_slt, k):
-        if k + 1 < self.carp.vehicles:
-            return self.criteria_3(u, u_slt)
-        else:
-            return self.criteria_4(u, u_slt)
-
-
-    
-    def better(self, u, u_slt, k):
-        choice = np.random.choice([i for i in range(1, 6)], size=1, p=[0.2, 0.2, 0.2, 0.2, 0.2])
-
-        if choice == 1:
-            return self.criteria_1(u, u_slt)
-        elif choice == 2:
-            return self.criteria_2(u, u_slt)
-        elif choice == 3:
-            return self.criteria_3(u, u_slt)
-        elif choice == 4:
-            return self.criteria_4(u, u_slt)
-        else:
-            return self.criteria_5(u, u_slt, k)
-
     
     def path_scanning(self):
 
