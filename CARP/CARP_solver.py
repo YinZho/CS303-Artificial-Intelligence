@@ -51,7 +51,7 @@ if __name__ == "__main__":
     dict = read_file(parse_res.instance_file)
     
     carp = CARP(dict['name'], dict['vertices'], dict['depot'], dict['required_edges'], dict['non_required_edges'], dict['vehicles'], dict['capacity'], dict['total_cost_of_required_edges'], dict['matrix'])
-    randomPS = RandomPS(carp)
+    randomPS = RandomPS(carp, parse_res.random_seed)
   
     randomPS.run(200)
     end_time = time.time()
