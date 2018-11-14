@@ -3,9 +3,8 @@ import numpy as np
 import random
 
 class RandomPS:
-    def __init__(self, carp, seed):
+    def __init__(self, carp):
         self.carp = carp
-        self.seed = seed
 
     def construct_free(self):
         free = list()
@@ -46,7 +45,6 @@ class RandomPS:
                    
                 if not free or d_min == math.inf:
                     break
-                random.seed(self.seed)
                 u_slt = random.choice(u_slts)
                 if load[k] + self.carp.graph.edge_demand[u_slt[0]][u_slt[1]] > capacity:
                     break
@@ -79,8 +77,8 @@ class RandomPS:
         print(mssg)
         print("q " + str(cost))
 
-
         # cnt = 0
+
         # for i in road:
         #        cnt = cnt + len(i)
         # print("\n***edge cnt***")
