@@ -18,37 +18,64 @@ class TabuSearch:
     def gen_neighbor_SI(self, not_adj):
         s_roads = self.S[1]
         move = []
-        delta_cost = 0
+        
         for r_idx, road in enumerate(s_roads):
-            for e_idx, edge in enumerate(road):
-                road.remove(edge)
+            for i in range(len(road)):
+                delta_cost = 0
+                edge_cost = self.graph.edge_demand[road[i][0]][road[i][1]]
 
-                edge_dmd = self.graph.edge_demand[edge[0]][edge[1]]
-                delta_cost -= edge_dmd + self.graph.mul_sp[edge[1]][road[e_idx+1][0]]
-                if e_idx-1 >= 0:
-                    delta_cost -= self.graph.mul_sp[road[e_idx-1][1]][edge[0]]
+                delta_cost -= edge_cost
+                if i-1 >= 0 and i+1 < len(road):
+                    delta_cost -= self.graph.mul_sp[road[i-1][1]][road[i][0]]
+                    delta_cost -= self.graph.mul_sp[road[i][1]][road[i+1][0]]
+                    delta_cost += self.graph.mul_sp[road[i-1][1]][road[i+1][0]]
+                elif i == len(road)-1:
+                    delta_cost -= self.graph.mul_sp[road[i-1][1]][road[i][0]]
+                    delta_cost += self.graph.mul_sp[road[i-1][1]][1]
+                elif i == 0:
+                    delta_cost -= self.graph.mul_sp[road[i][1]][road[i+1][0]]
+                    delta_cost += self.graph.mul_sp[1][road[i+1][0]]
 
+                edge = road[i]
+                del road[i]
+                
                 for idx, not_adj_edge in not_adj.items():
                     if r_idx == idx:
                         pass
                     else:
                         for pos in not_adj_edge:
-                            delta_cost -= self.graph.mul_sp[s_roads[idx][pos][1]][s_roads[idx][pos+1][0]]
+                            tmp_delta_cost = delta_cost
+                            tmp_delta_cost -= self.graph.mul_sp[s_roads[idx][pos][1]][s_roads[idx][pos+1][0]]
                             direction_l_cost = self.graph.mul_sp[s_roads[idx][pos][1]][edge[0]] + self.graph.mul_sp[edge[1]][s_roads[idx][pos+1][0]]
                             direction_r_cost = self.graph.mul_sp[s_roads[idx][pos][1]][edge[1]] + self.graph.mul_sp[edge[0]][s_roads[idx][pos+1][0]]
                             if direction_l_cost < direction_r_cost:
                                 s_roads[idx].insert(pos+1, edge)
-                                delta_cost += direction_l_cost + edge_dmd
+                                tmp_delta_cost += direction_l_cost
                             else:
                                 s_roads[idx].insert(pos+1, (edge[1], edge[0]))
-                                delta_cost += direction_r_cost + edge_dmd
+                                tmp_delta_cost += direction_r_cost
                             
-                            move.append(delta_cost, s_roads)
+                            move.append(tmp_delta_cost+edge_cost, s_roads)
 
                             del s_roads[idx][pos+1]
-                            
+                        
+                        # front end
+                        tmp_delta_cost = delta_cost
+                        tmp_delta_cost -= self.graph.mul_sp[1][s_roads[idx][0]]
+                        tmp_delta_cost += self.graph.mul_sp[1][edge[0]]
+                        tmp_delta_cost += self.graph.mul_sp[edge[1]][s_roads[idx][0]]
+                        s_roads[idx].insert(0, edge)
+                        move.append(tmp_delta_cost+edge_cost, s_roads)
 
-                road.insert(e_idx, edge)
+                        # back end
+                        tmp_delta_cost = delta_cost
+                        tmp_delta_cost -= self.graph.mul_sp[s_roads[idx][len(s_roads[idx])-1]][1]
+                        tmp_delta_cost += self.graph.mul_sp[s_roads[idx][len(s_roads[idx])-1]][edge[0]]
+                        tmp_delta_cost += self.graph.mul_sp[edge[1]][1]
+                        s_roads[idx].insert(len(s_roads[idx]), edge)
+                        move.append(tmp_delta_cost+edge_cost, s_roads)
+
+                road.insert(i, edge)
 
         return move    
 
@@ -59,16 +86,16 @@ class TabuSearch:
         delta_cost = 0
         for r_idx, road in enumerate(s_roads):
             for i in range(len(road)-1):
-                edge_0 = road[i]
-                edge_1 = road[i+1]
+                edge_cost = self.graph.edge_demand[road[i][0]][road[i][1]] + self.graph.edge_demand[road[i+1][0]][road[i+1][1]]
+                edge_cost += self.graph.mul_sp[road[i][1]][road[i+1][0]]
+                delta_cost -= edge_cost
 
-                edge_dmd = self.graph.edge_demand[edge_0[0]][edge_0[1]] + self.graph.edge_demand[edge_1[0]][edge_1[1]]
-                delta_cost -= edge_dmd
-                if i+2 < len(road):
+                if  i-1 >= 0 and i+2 < len(road):
                     delta_cost -= self.graph.mul_sp[edge_1[1]][road[i+2][0]]
-                if i-1 >= 0:
+                elif i == len(road) - 2:
                     delta_cost -= self.graph.mul_sp[road[i-1][1]][edge_0[0]]
-                
+                elif i == 0:
+
                 for idx, not_adj_edge in not_adj.items():
                     if r_idx == idx:
                         pass
@@ -80,18 +107,28 @@ class TabuSearch:
                             if direction_l_cost < direction_r_cost:
                                 s_roads[idx].insert(pos+1, edge_0)
                                 s_roads[idx].insert(pos+2, edge_1)
+                                delta_cost += direction_l_cost
+                            else:
+                                s_roads[idx].insert(pos+1, edge_1)
+                                s_roads[idx].insert(pos+2, edge_0)
+                                delta_cost += direction_r_cost
+
+                            move.append(delta_cost+edge_dmd, s_roads)
                             
-
-                
-
+                            del s_roads[idx][pos+1]
+                            del s_roads[idx][pos+2]
 
                 road.insert[i, edge_0]
                 road.insert[i, edge_1]
 
+        return move
+
+    def gen_neighbor_SWAP(self):
+
         
     def gen_neighbor(self):
         moves = []
-        s_cost, s_roads = self.S
+        s_roads = self.S[1]
         not_adj = defaultdict()
         for r_idx, road in enumerate(s_roads):
             not_adj[r_idx] = []
