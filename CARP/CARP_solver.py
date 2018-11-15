@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # print(carp.matrix)
     print(carp.vertices)
   
-    randomPS.run(int(int(parse_res.termination)/0.03))
+    randomPS.run(1000)
     end_time = time.time()
     print("***time cnt***")
     print(str(end_time - strt_time))
