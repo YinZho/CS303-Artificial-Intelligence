@@ -3,9 +3,8 @@ import numpy as np
 import random
 
 class RandomPS:
-    def __init__(self, carp, random_seed):
+    def __init__(self, carp, ):
         self.carp = carp
-        self.random_seed = random_seed
 
     def construct_free(self):
         free = list()
@@ -34,19 +33,19 @@ class RandomPS:
             i = 1
             while True:
                 d_min = math.inf
+                u_slts = list()
+
                 for u in free:
                     d = self.carp.graph.mul_sp[i][u[0]] 
                     if d < d_min:
                         d_min = d
-                        u_slt = u
+                        u_slts = [u]
                     elif d == d_min:
-                        choice = random.randint(0,1)
-                        if choice == 1:
-                            u_slt = u
+                        u_slts.append(u)
                    
                 if not free or d_min == math.inf:
                     break
-    
+                u_slt = random.choice(u_slts)
                 if load[k] + self.carp.graph.edge_demand[u_slt[0]][u_slt[1]] > capacity:
                     break
                 
@@ -63,7 +62,7 @@ class RandomPS:
             cost[k] = cost[k] + rtn_cost
             k = k + 1
         return(sum(cost), road)
-
+        # self.display(road, cost)
 
     def display(self, road, cost):
         # print("***road and cost***")
@@ -99,7 +98,6 @@ class RandomPS:
             if cost < best_res[0]:
                 best_res = (cost, road)
         
-        print(best_res)
         self.display(best_res[1], best_res[0])
     
 

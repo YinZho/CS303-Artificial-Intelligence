@@ -152,7 +152,29 @@ class TabuSearch:
                 s_roads[r_idx].insert(i+1, edge_1)
         return move
 
-    # def gen_neighbor_SWAP(self):
+    def gen_neighbor_SWAP(self):
+        s_roads = self.S[1]
+        move = []
+
+        for r_idx, road in enumerate(s_roads):
+            for i in range(len(road)):
+                edge_0 = road[i]
+                s_roads[r_idx].remove(edge_0)
+                for j in [i in range(len(road))].remove(r_idx):
+                    for k in range(len(s_roads[j])):
+                        edge_1 = s_roads[j][k]
+                        s_roads[j].remove(edge_1)
+                        s_roads[j].insert(k, edge_0)
+                        s_roads[r_idx].insert(i, edge_1)
+                        move.append(s_roads)
+                        s_roads[r_idx].remove(edge_1)
+                        s_roads[j].remove(edge_0)
+                        s_roads[j].insert(k, edge_0)                      
+                s_roads[r_idx].insert(i, edge_0)
+        with open('./out.txt','w') as file:
+            file.write(move)
+        return move
+
         
         
     def gen_neighbor(self):
@@ -164,8 +186,9 @@ class TabuSearch:
             for i in range(len(road) - 1):
                 if road[i][1] != road[i + 1][0]:
                     not_adj[r_idx].append(i)
-        moves += self.gen_neighbor_SI(not_adj)
-        moves += self.gen_neighbor_DI(not_adj)
+        # moves += self.gen_neighbor_SI(not_adj)
+        # moves += self.gen_neighbor_DI(not_adj)
+        moves += self.gen_neighbor_SWAP()
         # heapq.heapify(moves)
         with open("out.txt", 'w') as file:
             for s in moves:
