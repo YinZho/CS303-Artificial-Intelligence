@@ -100,7 +100,6 @@ class RandomPS:
             if cost < best_res[0]:
                 best_res = (cost, road)
         
-        print(best_res)
         self.display(best_res[1], best_res[0])
     
 
