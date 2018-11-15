@@ -46,7 +46,7 @@ class RandomPS:
                    
                 if not free or d_min == math.inf:
                     break
-                random.seed(self.random_seed)
+                # random.seed(self.random_seed)
                 u_slt = random.choice(u_slts)
                 if load[k] + self.carp.graph.edge_demand[u_slt[0]][u_slt[1]] > capacity:
                     break
@@ -100,6 +100,7 @@ class RandomPS:
             if cost < best_res[0]:
                 best_res = (cost, road)
         
+        print(best_res)
         self.display(best_res[1], best_res[0])
     
 

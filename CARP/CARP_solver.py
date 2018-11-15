@@ -53,8 +53,8 @@ if __name__ == "__main__":
     carp = CARP(dict['name'], dict['vertices'], dict['depot'], dict['required_edges'], dict['non_required_edges'], dict['vehicles'], dict['capacity'], dict['total_cost_of_required_edges'], dict['matrix'])
     randomPS = RandomPS(carp, parse_res.random_seed)
   
-    randomPS.run(200)
+    randomPS.run(int(int(parse_res.termination)/0.03))
     end_time = time.time()
-    # print("***time cnt***")
-    # print(str(end_time - strt_time))
+    print("***time cnt***")
+    print(str(end_time - strt_time))
     
