@@ -75,17 +75,18 @@ class TabuSearch:
 
                         # back end
                         tmp_delta_cost = delta_cost
-                        tmp_delta_cost -= self.graph.mul_sp[s_roads[idx][len(s_roads[idx])-1]][1]
-                        direction_l_cost = self.graph.mul_sp[s_roads[idx][len(s_roads[idx])-1]][edge[0]] + self.graph.mul_sp[edge[1]][1]
-                        direction_r_cost = self.graph.mul_sp[s_roads[idx][len(s_roads[idx])-1]][edge[1]] + self.graph.mul_sp[edge[0]][1]
+                        r_len = len(s_roads[idx])
+                        tmp_delta_cost -= self.graph.mul_sp[s_roads[idx][r_len-1]][1]
+                        direction_l_cost = self.graph.mul_sp[s_roads[idx][r_len-1]][edge[0]] + self.graph.mul_sp[edge[1]][1]
+                        direction_r_cost = self.graph.mul_sp[s_roads[idx][r_len-1]][edge[1]] + self.graph.mul_sp[edge[0]][1]
                         if direction_l_cost < direction_r_cost:
                             tmp_delta_cost += direction_l_cost
-                            s_roads[idx].insert(len(s_roads[idx]), edge)
+                            s_roads[idx].insert(r_len, edge)
                         else:
                             tmp_delta_cost += direction_r_cost
-                            s_roads[idx].insert(len(s_roads[idx]), (edge[1], edge[0]))
+                            s_roads[idx].insert(r_len, (edge[1], edge[0]))
                         move.append(tmp_delta_cost+edge_cost, s_roads)
-                        del s_roads[idx][len(s_roads[idx])]
+                        del s_roads[idx][r_len]
 
                 road.insert(i, edge)
 
@@ -116,7 +117,7 @@ class TabuSearch:
                 edge_0 = road[i]
                 edge_1 = road[i+1]
                 del road[i]
-                def road[i+1]
+                del road[i+1]
 
                 for idx, not_adj_edge in not_adj.items():
                     if r_idx == idx:
@@ -136,25 +137,55 @@ class TabuSearch:
                                 s_roads[idx].insert(pos+2, (edge_0[1], edge_0[0]))
                                 tmp_delta_cost += direction_r_cost
 
-                            move.append(tmp_delta_cost+edge_dmd, s_roads)
-                            
+                            move.append(tmp_delta_cost+edge_cost, s_roads)                 
                             del s_roads[idx][pos+1]
                             del s_roads[idx][pos+2]
                         
                         # front end
                         tmp_delta_cost = delta_cost
                         tmp_delta_cost -= self.graph.mul_sp[1][s_roads[idx][0]]
-                        tmp_delta_cost += self.graph.mul_sp[1][edge_0[0]]
-                        tmp_delta_cost += self.graph.mul_sp[edge_1[1]][s_roads[idx][0]]
+                        direction_l_cost = self.graph.mul_sp[1][edge_0[0]] + self.graph.mul_sp[edge_1[1]][s_roads[idx][0]]
+                        direction_r_cost = self.graph.mul_sp[1][edge_1[1]] + self.graph.mul_sp[edge_0[0]][s_roads[idx][0]]
+                        if direction_l_cost < direction_r_cost:
+                            tmp_delta_cost += direction_l_cost
+                            s_roads[idx].insert(0, edge_0)
+                            s_roads[idx].insert(1, edge_1)
+                        else:
+                            tmp_delta_cost += direction_r_cost
+                            s_roads[idx].insert(0, (edge_1[1], edge_1[0]))
+                            s_roads[idx].insert(1, (edge_0[1], edge_0[0]))
+                        
+                        move.append(tmp_delta_cost+edge_cost, s_roads)
+                        del s_roads[idx][0]
+                        del s_roads[idx][1]
+
                         
                         # back end
+                        tmp_delta_cost = delta_cost
+                        r_len = len(s_roads[idx])
+                        tmp_delta_cost -= self.graph.mul_sp[r_len-1][1][1]
+                        direction_l_cost = self.graph.mul_sp[r_len-1][edge_0[0]] + self.graph.mul_sp[edge_1[1]][1]
+                        direction_l_cost = self.graph.mul_sp[r_len-1][edge_1[1]] + self.graph.mul_sp[edge_0[0]][1]
+                        if direction_l_cost < direction_r_cost:
+                            tmp_delta_cost += direction_l_cost
+                            s_roads[idx].insert(r_len, edge_0)
+                            s_roads[idx].insert(r_len+1, edge_1)
+                        else:
+                            tmp_delta_cost += direction_r_cost
+                            s_roads[idx].insert(r_len, (edge_1[1], edge_1[0]))
+                            s_roads[idx].insert(r_len+1, (edge_0[1], edge_0[0]))
+                        
+                        move.append(tmp_delta_cost+edge_cost, s_roads)
+                        del s_roads[idx][r_len]
+                        del s_roads[idx][r_len+1]
+                        
 
                 road.insert[i, edge_0]
                 road.insert[i+1, edge_1]
 
         return move
 
-    def gen_neighbor_SWAP(self):
+    # def gen_neighbor_SWAP(self):
 
         
     def gen_neighbor(self):
