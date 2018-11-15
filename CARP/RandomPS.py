@@ -63,7 +63,7 @@ class RandomPS:
             cost[k] = cost[k] + rtn_cost
             k = k + 1
         return(sum(cost), road)
-        # self.display(road, cost)
+
 
     def display(self, road, cost):
         # print("***road and cost***")
@@ -99,6 +99,7 @@ class RandomPS:
             if cost < best_res[0]:
                 best_res = (cost, road)
         
+        print(best_res)
         self.display(best_res[1], best_res[0])
     
 
