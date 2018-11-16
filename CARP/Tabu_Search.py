@@ -170,15 +170,9 @@ class TabuSearch:
                     move.append(copy.deepcopy(s_roads))
                     s_roads[i][k] = x
                     s_roads[j][g] = y
-        with open('./out.txt', 'w') as file:
-            for road in move:
-                file.write(str(road))
-                file.write("\n")
+        return move
 
-
-        
-
-        
+         
         
     def gen_neighbor(self):
         moves = []
@@ -189,14 +183,10 @@ class TabuSearch:
             for i in range(len(road) - 1):
                 if road[i][1] != road[i + 1][0]:
                     not_adj[r_idx].append(i)
-        # moves += self.gen_neighbor_SI(not_adj)
-        # moves += self.gen_neighbor_DI(not_adj)
+        moves += self.gen_neighbor_SI(not_adj)
+        moves += self.gen_neighbor_DI(not_adj)
         moves += self.gen_neighbor_SWAP()
-        # heapq.heapify(moves)
-        with open("out.txt", 'w') as file:
-            for s in moves:
-                file.write(str(s))
-                file.write("\n\n")
+
         self.cal_sol_cost(moves)
 
              
