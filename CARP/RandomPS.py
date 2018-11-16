@@ -34,19 +34,19 @@ class RandomPS:
             i = 1
             while True:
                 d_min = math.inf
-                u_slts = list()
-
                 for u in free:
                     d = self.carp.graph.mul_sp[i][u[0]] 
                     if d < d_min:
                         d_min = d
-                        u_slts = [u]
+                        u_slt = u
                     elif d == d_min:
-                        u_slts.append(u)
+                        choice = random.randint(0,1)
+                        if choice == 1:
+                            u_slt = u
                    
                 if not free or d_min == math.inf:
                     break
-                u_slt = random.choice(u_slts)
+    
                 if load[k] + self.carp.graph.edge_demand[u_slt[0]][u_slt[1]] > capacity:
                     break
                 
@@ -100,19 +100,3 @@ class RandomPS:
                 best_res = (cost, road)
         
         self.display(best_res[1], best_res[0])
-    
-
-        
-    
-
-
-                
-
-            
-            
-
-
-# if __name__ == '__main__':
-
-
-        
