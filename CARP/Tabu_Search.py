@@ -2,11 +2,13 @@ import time
 import copy
 import math
 import heapq
+import logging
 import numpy as np
 from Graph import Graph
 from collections import defaultdict
 from CARP_solver import read_file, CARP, argparse
 from multiprocessing import Process, Manager
+import WriteToFile
 
 
 
@@ -30,7 +32,8 @@ class TabuSearch:
             if capacity > self.Q:
                 return False
         return True
-    
+
+
     def cal_obj_func(self, S):
         cost = self.cal_sol_cost(S)
         roads = S[1]
@@ -45,7 +48,6 @@ class TabuSearch:
 
     def cal_sol_cost(self, S):
         roads = S[1]
-        # print(roads)
         cost = 0
         for road in roads:
             r_len = len(road)
@@ -59,11 +61,19 @@ class TabuSearch:
             cost += self.graph.adj_matrix[road[r_len-1][0]][road[r_len-1][1]]
             cost += self.graph.mul_sp[road[r_len-1][1]][1]
         return cost
+
+    def is_in_tabu_list(self, r):
+        r = sorted(r)
+        for e in self.tabu_list:
+            roads = e[1][1]
+            if r == roads:
+                return True
+        return False
                          
 
     def gen_neighbor_SI(self, not_adj, neighbor_S):
         s_roads = self.S[1]
-        best_S = self.S_B
+        best_S = None
         
         for r_idx, road in enumerate(s_roads):
             for i in range(len(road)):
@@ -81,11 +91,15 @@ class TabuSearch:
                                 s_roads[idx].insert(pos+1, edge)
                             else:
                                 s_roads[idx].insert(pos+1, (edge[1], edge[0]))
-                            
-                            
-                            value = self.cal_obj_func([0, s_roads])
-                            if value < best_S[0]:
-                                best_S = (value, copy.deepcopy(s_roads))
+
+                            if not self.is_in_tabu_list(s_roads):
+                                value = self.cal_obj_func([0, s_roads])
+                                if best_S is None:
+                                    best_S = [value, copy.deepcopy(s_roads)]
+                                else:
+                                    if value < best_S[0]:
+                                        best_S = [value, copy.deepcopy(s_roads)]
+
                             del s_roads[idx][pos+1]
                     
                         direction_l_cost = self.graph.mul_sp[1][edge[0]] + self.graph.mul_sp[edge[1]][s_roads[idx][0][0]]
@@ -95,9 +109,10 @@ class TabuSearch:
                         else:
                             s_roads[idx].insert(0, (edge[1], edge[0]))
         
-                        value = self.cal_obj_func([0, s_roads])
-                        if value < best_S[0]:
-                            best_S = (value, copy.deepcopy(s_roads))
+                        if not self.is_in_tabu_list(s_roads):
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                best_S = [value, copy.deepcopy(s_roads)]
 
                         del s_roads[idx][0]
 
@@ -110,15 +125,15 @@ class TabuSearch:
                         else:
                             s_roads[idx].insert(r_len, (edge[1], edge[0]))
 
-                        value = self.cal_obj_func([0, s_roads])
-                        if value < best_S[0]:
-                            best_S = (value, copy.deepcopy(s_roads))
+                        if not self.is_in_tabu_list(s_roads):
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                best_S = [value, copy.deepcopy(s_roads)]
 
                         del s_roads[idx][r_len]
 
                 s_roads[r_idx].insert(i, edge)
 
-        # print(best_S)
         neighbor_S.append(best_S)
 
 
@@ -126,7 +141,7 @@ class TabuSearch:
     
     def gen_neighbor_DI(self, not_adj, neighbor_S):
         s_roads = self.S[1]
-        best_S = self.S_B
+        best_S = None
             
         for r_idx, road in enumerate(s_roads):
             for i in range(len(road)-1):
@@ -153,9 +168,13 @@ class TabuSearch:
                                
 
                              
-                            value = self.cal_obj_func([0, s_roads])
-                            if value < best_S[0]:
-                                best_S = (value, copy.deepcopy(s_roads))
+                            if not self.is_in_tabu_list(s_roads):
+                                value = self.cal_obj_func([0, s_roads])
+                                if best_S is None:
+                                    best_S = [value, copy.deepcopy(s_roads)]
+                                else:
+                                    if value < best_S[0]:
+                                        best_S = [value, copy.deepcopy(s_roads)]
 
 
                             del s_roads[idx][pos+1]
@@ -170,10 +189,11 @@ class TabuSearch:
                         else:
                             s_roads[idx].insert(0, (edge_1[1], edge_1[0]))
                             s_roads[idx].insert(1, (edge_0[1], edge_0[0]))
-                        
-                        value = self.cal_obj_func([0, s_roads])
-                        if value < best_S[0]:
-                            best_S = (value, copy.deepcopy(s_roads))
+                    
+                        if not self.is_in_tabu_list(s_roads):
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                best_S = [value, copy.deepcopy(s_roads)]
 
                         del s_roads[idx][0]
                         del s_roads[idx][0]
@@ -191,9 +211,10 @@ class TabuSearch:
                             s_roads[idx].insert(r_len+1, (edge_0[1], edge_0[0]))
                         
                       
-                        value = self.cal_obj_func([0, s_roads])
-                        if value < best_S[0]:
-                            best_S = (value, copy.deepcopy(s_roads))
+                        if not self.is_in_tabu_list(s_roads):
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                best_S = [value, copy.deepcopy(s_roads)]
 
 
                         del s_roads[idx][r_len]
@@ -207,7 +228,7 @@ class TabuSearch:
 
     def gen_neighbor_SWAP(self, neighbor_S):
         s_roads = self.S[1]
-        best_S = self.S_B
+        best_S = None
   
         combine = []
         for i in range(len(s_roads)):
@@ -222,9 +243,13 @@ class TabuSearch:
                     s_roads[i][k] = y
                     s_roads[j][g] = x
 
-                    value = self.cal_obj_func([0, s_roads])
-                    if value < best_S[0]:
-                        best_S = (value, copy.deepcopy(s_roads))
+                    if not self.is_in_tabu_list(s_roads):
+                        value = self.cal_obj_func([0, s_roads])
+                        if best_S is None:
+                            best_S = [value, copy.deepcopy(s_roads)]
+                        else:
+                            if value < best_S[0]:
+                                best_S = [value, copy.deepcopy(s_roads)]
 
                     s_roads[i][k] = x
                     s_roads[j][g] = y
@@ -239,41 +264,37 @@ class TabuSearch:
             for i in range(len(road) - 1):
                 if road[i][1] != road[i + 1][0]:
                     not_adj[r_idx].append(i)
-        # start = time.time()
+
         procs = []
         with Manager() as manager:
             neighbor_S = manager.list()
             if k % F_SI == 0:
-                print("Single Insertion...")
+ 
                 SI_proc = Process(target=self.gen_neighbor_SI, args=(not_adj,neighbor_S))
                 procs.append(SI_proc)
                 SI_proc.start()
 
             if k % F_DI == 0:
-                print("Double Insertion...")
+
                 DI_proc = Process(target=self.gen_neighbor_DI, args=(not_adj,neighbor_S))
                 procs.append(DI_proc)
                 DI_proc.start()
 
             if k % F_SWAP == 0:
-                print("Swap...")
+                # self.write.info_to_file("Swap...")
                 SWAP_proc = Process(target=self.gen_neighbor_SWAP, args=(neighbor_S,))
                 procs.append(SWAP_proc)
                 SWAP_proc.start()
 
 
             for proc in procs:
-                proc.join()    
-
-
-            # print(neighbor_S)
-
+                proc.join()   
             return max(neighbor_S)
 
 
     def run(self):
         k = 1
-        
+       
         tenure = self.N // 2
         F_SI = 1
         F_DI = 5
@@ -286,25 +307,33 @@ class TabuSearch:
         k_BT = 0
         while True:
             s = self.gen_neighbor(k, F_SI, F_DI, F_SWAP)
-            print(k)
-            # update tabu list
+            
+            if self.is_feasible(s):
+                print(str(s[0]) + "  ------  " + str("T"))
+            else:
+                print(str(s[0]) + "    " + str("F"))
 
-            while True:
-                if len(self.tabu_list) > 0:
-                    e = heapq.heappop(self.tabu_list)
-                    if k - e[0] <= tenure:
-                        heapq.heappush(self.tabu_list)
-                        break
-                else:
-                    break
+            s[1] = sorted(s[1])
 
-            if len(self.tabu_list) == self.N // 2:
+            if len(self.tabu_list) > 0:
+                for i, e in enumerate(self.tabu_list):
+                    if e[0] + tenure < k:
+                        del self.tabu_list[i]
+
+            if len(self.tabu_list) >= self.N // 2:
                 tmp = max(self.tabu_list, key=lambda x:x[1])
                 if tmp[1][0] >= s[0]:
                     self.tabu_list.remove(tmp)
                     heapq.heappush(self.tabu_list, [k, s]) 
             else:
                 heapq.heappush(self.tabu_list, [k, s])
+
+
+            if self.is_feasible(s):
+                k_F += 1
+            else:
+                k_I += 1
+
             if self.is_feasible(s) and s[0] < self.S_BF[0]:
                 self.S_BF = s
                 k_B = 0
@@ -324,7 +353,7 @@ class TabuSearch:
                 elif k_I == 10:
                     self.P = 2 * self.P
             if k_F == 10 or k_I == 10:
-                self.S_B[0] = self.cal_obj_func(self.cal_obj_func)
+                self.S_B[0] = self.cal_obj_func(self.S_B)
                 k_F = 0
                 k_I = 0
             
@@ -351,17 +380,193 @@ class TabuSearch:
                 self.S_B[0] = self.cal_obj_func(self.S_B)
                 self.tabu_list = []
 
-            if (k >= 900 * math.sqrt(self.N) and k_BF >= 10 * self.N) or k_BT == 2 * k_L:
+            # if (k >= 900 * math.sqrt(self.N) and k_BF >= 10 * self.N) or k_BT == 2 * k_L:
+            if k >= 1000:
                 break
+
         
         print(self.S_BF)
-            
+    
 
+
+
+
+################################################################
+
+    def print_lists(self, l):
+        if isinstance(l[0], list):
+            for e in l:
+                print(str(e))
+
+    def gen_neighbor_test(self):
+        s_roads = self.S[1]
+        not_adj = defaultdict()
+        for r_idx, road in enumerate(s_roads):
+            not_adj[r_idx] = []
+            for i in range(len(road) - 1):
+                if road[i][1] != road[i + 1][0]:
+                    not_adj[r_idx].append(i)
+        # start = time.time() 
+        neighbor_S = []
+        self.gen_neighbor_DI_test(not_adj,neighbor_S)
+
+
+    def gen_neighbor_SI_test(self, not_adj, neighbor_S):
+        s_roads = self.S[1]
+        best_S = self.S
+        
+        for r_idx, road in enumerate(s_roads):
+            for i in range(len(road)):
+                edge = road[i]
+                del s_roads[r_idx][i]
+                
+                for idx, not_adj_edge in not_adj.items():
+                    if r_idx == idx:
+                        pass
+                    else:
+                        for pos in not_adj_edge:
+                            direction_l_cost = self.graph.mul_sp[s_roads[idx][pos][1]][edge[0]] + self.graph.mul_sp[edge[1]][s_roads[idx][pos+1][0]]
+                            direction_r_cost = self.graph.mul_sp[s_roads[idx][pos][1]][edge[1]] + self.graph.mul_sp[edge[0]][s_roads[idx][pos+1][0]]
+                            if direction_l_cost < direction_r_cost:
+                                s_roads[idx].insert(pos+1, edge)
+                            else:
+                                s_roads[idx].insert(pos+1, (edge[1], edge[0]))
+                            
+                            
+                            if not self.is_in_tabu_list(s_roads):
+                                value = self.cal_obj_func([0, s_roads])
+                                if value < best_S[0]:
+                                    print(str(value)+" "+str(best_S[0]))
+                                    best_S = [value, copy.deepcopy(s_roads)]
+
+                            del s_roads[idx][pos+1]
+                    
+                        direction_l_cost = self.graph.mul_sp[1][edge[0]] + self.graph.mul_sp[edge[1]][s_roads[idx][0][0]]
+                        direction_r_cost = self.graph.mul_sp[1][edge[1]] + self.graph.mul_sp[edge[0]][s_roads[idx][0][0]]
+                        if direction_l_cost < direction_r_cost:
+                            s_roads[idx].insert(0, edge)
+                        else:
+                            s_roads[idx].insert(0, (edge[1], edge[0]))
+        
+                        if not self.is_in_tabu_list(s_roads):
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                print(str(value)+" "+str(best_S[0]))
+                                best_S = [value, copy.deepcopy(s_roads)]
+
+                        del s_roads[idx][0]
+
+
+                        r_len = len(s_roads[idx])
+                        direction_l_cost = self.graph.mul_sp[s_roads[idx][r_len-1][1]][edge[0]] + self.graph.mul_sp[edge[1]][1]
+                        direction_r_cost = self.graph.mul_sp[s_roads[idx][r_len-1][1]][edge[1]] + self.graph.mul_sp[edge[0]][1]
+                        if direction_l_cost < direction_r_cost:
+                            s_roads[idx].insert(r_len, edge)
+                        else:
+                            s_roads[idx].insert(r_len, (edge[1], edge[0]))
+
+                        
+                        if not self.is_in_tabu_list(s_roads):
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                print(str(value)+" "+str(best_S[0]))
+                                best_S = [value, copy.deepcopy(s_roads)]
+
+                        del s_roads[idx][r_len]
+
+                s_roads[r_idx].insert(i, edge)
+        print(self.S[0])
+        print(best_S[0])
+        neighbor_S.append(best_S)
 
 
                 
 
-        
+    def gen_neighbor_DI_test(self, not_adj, neighbor_S):
+        s_roads = self.S[1]
+        best_S = self.S
+            
+        for r_idx, road in enumerate(s_roads):
+            for i in range(len(road)-1):
+
+                edge_0 = road[i]
+                edge_1 = road[i+1]
+                del s_roads[r_idx][i]
+                del s_roads[r_idx][i]
+
+                for idx, not_adj_edge in not_adj.items():
+                    if r_idx == idx:
+                        pass
+                    else:
+                        for pos in not_adj_edge:
+                            direction_l_cost = self.graph.mul_sp[s_roads[idx][pos][1]][edge_0[0]] + self.graph.mul_sp[edge_1[1]][s_roads[idx][pos+1][0]]
+                            direction_r_cost = self.graph.mul_sp[s_roads[idx][pos][1]][edge_1[1]] + self.graph.mul_sp[edge_0[0]][s_roads[idx][pos+1][0]]
+                            if direction_l_cost < direction_r_cost:
+                                s_roads[idx].insert(pos+1, edge_0)
+                                s_roads[idx].insert(pos+2, edge_1)
+                                
+                            else:
+                                s_roads[idx].insert(pos+1, (edge_1[1], edge_1[0]))
+                                s_roads[idx].insert(pos+2, (edge_0[1], edge_0[0]))
+                               
+
+                             
+                            if not self.is_in_tabu_list(s_roads):
+                                value = self.cal_obj_func([0, s_roads])
+                                print(str(value)+" "+str(best_S[0]))
+                                if value < best_S[0]:
+                                    
+                                    best_S = [value, copy.deepcopy(s_roads)]
+
+
+                            del s_roads[idx][pos+1]
+                            del s_roads[idx][pos+1]
+                        
+                        # front end
+                        direction_l_cost = self.graph.mul_sp[1][edge_0[0]] + self.graph.mul_sp[edge_1[1]][s_roads[idx][0][0]]
+                        direction_r_cost = self.graph.mul_sp[1][edge_1[1]] + self.graph.mul_sp[edge_0[0]][s_roads[idx][0][0]]
+                        if direction_l_cost < direction_r_cost:
+                            s_roads[idx].insert(0, edge_0)
+                            s_roads[idx].insert(1, edge_1)
+                        else:
+                            s_roads[idx].insert(0, (edge_1[1], edge_1[0]))
+                            s_roads[idx].insert(1, (edge_0[1], edge_0[0]))
+                    
+                        if not self.is_in_tabu_list(s_roads):
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                print(str(value)+" "+str(best_S[0]))
+                                best_S = [value, copy.deepcopy(s_roads)]
+
+                        del s_roads[idx][0]
+                        del s_roads[idx][0]
+
+                        
+                        # back end
+                        r_len = len(s_roads[idx])
+                        direction_l_cost = self.graph.mul_sp[s_roads[idx][r_len-1][1]][edge_0[0]] + self.graph.mul_sp[edge_1[1]][1]
+                        direction_l_cost = self.graph.mul_sp[s_roads[idx][r_len-1][1]][edge_1[1]] + self.graph.mul_sp[edge_0[0]][1]
+                        if direction_l_cost < direction_r_cost:
+                            s_roads[idx].insert(r_len, edge_0)
+                            s_roads[idx].insert(r_len+1, edge_1)
+                        else:
+                            s_roads[idx].insert(r_len, (edge_1[1], edge_1[0]))
+                            s_roads[idx].insert(r_len+1, (edge_0[1], edge_0[0]))
+                        
+                      
+                        if not self.is_in_tabu_list(s_roads):
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                print(str(value)+" "+str(best_S[0]))
+                                best_S = [value, copy.deepcopy(s_roads)]
+
+                        del s_roads[idx][r_len]
+                        del s_roads[idx][r_len]
+
+                s_roads[r_idx].insert(i, edge_0)
+                s_roads[r_idx].insert(i+1, edge_1)
+
+        neighbor_S.append(best_S)
 
         
 
@@ -381,4 +586,5 @@ if __name__ == '__main__':
     graph.multiple_shortest_path()
     tabuSearch = TabuSearch(init_S, carp.required_edges, carp.capacity, graph)
     tabuSearch.run()
+    # tabuSearch.gen_neighbor_test()
     # print(tabuSearch.is_feasible(init_S))
