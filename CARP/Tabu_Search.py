@@ -1,5 +1,6 @@
 import time
 import copy
+import math
 import heapq
 import numpy as np
 from Graph import Graph
@@ -16,10 +17,12 @@ class TabuSearch:
         self.S_BF = S
         self.N = N
         self.Q = Q
+        self.P = 1
         self.graph = graph
+        self.tabu_list = list()
 
     def is_feasible(self, S):
-        cost, roads = S
+        roads = S[1]
         for road in roads:
             capacity = 0
             for edge in road:
@@ -27,12 +30,26 @@ class TabuSearch:
             if capacity > self.Q:
                 return False
         return True
+    
+    def cal_obj_func(self, S):
+        cost = self.cal_sol_cost(S)
+        roads = S[1]
+        w = 0
+        for road in roads:
+            capacity = 0
+            for edge in road:
+                capacity += self.graph.edge_demand[edge[0]][edge[1]]
+            w_tmp = max(capacity - self.Q, 0)
+            w = max(w, w_tmp)
+        return cost + self.P * w
 
-
-    def cal_sol_cost(self, roads):
+    def cal_sol_cost(self, S):
+        roads = S[1]
+        # print(roads)
         cost = 0
         for road in roads:
             r_len = len(road)
+            
             cost += self.graph.adj_matrix[road[0][0]][road[0][1]]
             cost += self.graph.mul_sp[1][road[0][0]]
             cost += self.graph.mul_sp[road[0][1]][road[1][0]]
@@ -66,9 +83,9 @@ class TabuSearch:
                                 s_roads[idx].insert(pos+1, (edge[1], edge[0]))
                             
                             
-                            cost = self.cal_sol_cost(s_roads)
-                            if cost < best_S[0]:
-                                best_S = (cost, copy.deepcopy(s_roads))
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                best_S = (value, copy.deepcopy(s_roads))
                             del s_roads[idx][pos+1]
                     
                         direction_l_cost = self.graph.mul_sp[1][edge[0]] + self.graph.mul_sp[edge[1]][s_roads[idx][0][0]]
@@ -77,9 +94,11 @@ class TabuSearch:
                             s_roads[idx].insert(0, edge)
                         else:
                             s_roads[idx].insert(0, (edge[1], edge[0]))
-                        cost = self.cal_sol_cost(s_roads)
-                        if cost < best_S[0]:
-                            best_S = (cost, copy.deepcopy(s_roads))
+        
+                        value = self.cal_obj_func([0, s_roads])
+                        if value < best_S[0]:
+                            best_S = (value, copy.deepcopy(s_roads))
+
                         del s_roads[idx][0]
 
 
@@ -90,13 +109,16 @@ class TabuSearch:
                             s_roads[idx].insert(r_len, edge)
                         else:
                             s_roads[idx].insert(r_len, (edge[1], edge[0]))
-                        cost = self.cal_sol_cost(s_roads)
-                        if cost < best_S[0]:
-                            best_S = (cost, copy.deepcopy(s_roads))
+
+                        value = self.cal_obj_func([0, s_roads])
+                        if value < best_S[0]:
+                            best_S = (value, copy.deepcopy(s_roads))
+
                         del s_roads[idx][r_len]
 
                 s_roads[r_idx].insert(i, edge)
 
+        # print(best_S)
         neighbor_S.append(best_S)
 
 
@@ -131,9 +153,9 @@ class TabuSearch:
                                
 
                              
-                            cost = self.cal_sol_cost(s_roads)
-                            if cost < best_S[0]:
-                                best_S = (cost, copy.deepcopy(s_roads))
+                            value = self.cal_obj_func([0, s_roads])
+                            if value < best_S[0]:
+                                best_S = (value, copy.deepcopy(s_roads))
 
 
                             del s_roads[idx][pos+1]
@@ -149,9 +171,10 @@ class TabuSearch:
                             s_roads[idx].insert(0, (edge_1[1], edge_1[0]))
                             s_roads[idx].insert(1, (edge_0[1], edge_0[0]))
                         
-                        cost = self.cal_sol_cost(s_roads)
-                        if cost < best_S[0]:
-                            best_S = (cost, copy.deepcopy(s_roads))
+                        value = self.cal_obj_func([0, s_roads])
+                        if value < best_S[0]:
+                            best_S = (value, copy.deepcopy(s_roads))
+
                         del s_roads[idx][0]
                         del s_roads[idx][0]
 
@@ -167,9 +190,12 @@ class TabuSearch:
                             s_roads[idx].insert(r_len, (edge_1[1], edge_1[0]))
                             s_roads[idx].insert(r_len+1, (edge_0[1], edge_0[0]))
                         
-                        cost = self.cal_sol_cost(s_roads)
-                        if cost < best_S[0]:
-                            best_S = (cost, copy.deepcopy(s_roads))
+                      
+                        value = self.cal_obj_func([0, s_roads])
+                        if value < best_S[0]:
+                            best_S = (value, copy.deepcopy(s_roads))
+
+
                         del s_roads[idx][r_len]
                         del s_roads[idx][r_len]
 
@@ -186,7 +212,7 @@ class TabuSearch:
         combine = []
         for i in range(len(s_roads)):
             for j in range(i+1, len(s_roads)):
-                combine.append((i,j))
+                combine.append([i,j])
         for com in combine:
             i,j = com
             for k in range(len(s_roads[i])):
@@ -196,16 +222,16 @@ class TabuSearch:
                     s_roads[i][k] = y
                     s_roads[j][g] = x
 
-                    cost = self.cal_sol_cost(s_roads)
-                    if cost < best_S[0]:
-                        best_S = (cost, copy.deepcopy(s_roads))
+                    value = self.cal_obj_func([0, s_roads])
+                    if value < best_S[0]:
+                        best_S = (value, copy.deepcopy(s_roads))
 
                     s_roads[i][k] = x
                     s_roads[j][g] = y
         neighbor_S.append(best_S)
         
 
-    def gen_neighbor(self):
+    def gen_neighbor(self, k, F_SI, F_DI, F_SWAP):
         s_roads = self.S[1]
         not_adj = defaultdict()
         for r_idx, road in enumerate(s_roads):
@@ -217,38 +243,123 @@ class TabuSearch:
         procs = []
         with Manager() as manager:
             neighbor_S = manager.list()
-            
-            SI_proc = Process(target=self.gen_neighbor_SI, args=(not_adj,neighbor_S))
-            procs.append(SI_proc)
-            SI_proc.start()
+            if k % F_SI == 0:
+                print("Single Insertion...")
+                SI_proc = Process(target=self.gen_neighbor_SI, args=(not_adj,neighbor_S))
+                procs.append(SI_proc)
+                SI_proc.start()
 
-            DI_proc = Process(target=self.gen_neighbor_DI, args=(not_adj,neighbor_S))
-            procs.append(DI_proc)
-            DI_proc.start()
+            if k % F_DI == 0:
+                print("Double Insertion...")
+                DI_proc = Process(target=self.gen_neighbor_DI, args=(not_adj,neighbor_S))
+                procs.append(DI_proc)
+                DI_proc.start()
 
-            SWAP_proc = Process(target=self.gen_neighbor_SWAP, args=(neighbor_S,))
-            procs.append(SWAP_proc)
-            SWAP_proc.start()
+            if k % F_SWAP == 0:
+                print("Swap...")
+                SWAP_proc = Process(target=self.gen_neighbor_SWAP, args=(neighbor_S,))
+                procs.append(SWAP_proc)
+                SWAP_proc.start()
 
 
             for proc in procs:
                 proc.join()    
 
+
+            # print(neighbor_S)
+
             return max(neighbor_S)
 
 
     def run(self):
-        k = 0
-        tabu_list = list()
-        tenure = self.N / 2
+        k = 1
+        
+        tenure = self.N // 2
         F_SI = 1
         F_DI = 5
         F_SWAP = 5
-        P = 1
         k_F = 0
         k_I = 0
-        for _ in range(10000):
-            self.gen_neighbor()
+        k_B = 0 
+        k_L = 8 * self.N
+        k_BF = 0
+        k_BT = 0
+        while True:
+            s = self.gen_neighbor(k, F_SI, F_DI, F_SWAP)
+            print(k)
+            # update tabu list
+
+            while True:
+                if len(self.tabu_list) > 0:
+                    e = heapq.heappop(self.tabu_list)
+                    if k - e[0] <= tenure:
+                        heapq.heappush(self.tabu_list)
+                        break
+                else:
+                    break
+
+            if len(self.tabu_list) == self.N // 2:
+                tmp = max(self.tabu_list, key=lambda x:x[1])
+                if tmp[1][0] >= s[0]:
+                    self.tabu_list.remove(tmp)
+                    heapq.heappush(self.tabu_list, [k, s]) 
+            else:
+                heapq.heappush(self.tabu_list, [k, s])
+            if self.is_feasible(s) and s[0] < self.S_BF[0]:
+                self.S_BF = s
+                k_B = 0
+                k_BF = 0
+                k_BT = 0
+            if s[0] < self.S_B[0]:
+                self.S_B = s
+                k_B = 0
+                k_BT = 0
+            k += 1
+            k_B += 1
+            k_BF += 1
+            k_BT += 1
+            if  k % 10 ==0:
+                if k_F == 10:
+                    self.P = self.P / 2
+                elif k_I == 10:
+                    self.P = 2 * self.P
+            if k_F == 10 or k_I == 10:
+                self.S_B[0] = self.cal_obj_func(self.cal_obj_func)
+                k_F = 0
+                k_I = 0
+            
+            if k_B == k_L // 2:
+                F_SI = 5
+                F_DI = 1
+                F_SWAP = 10
+            
+            if k_B == k_L:
+                # (1)
+                self.s = self.S_BF
+
+                # (2)
+                k_B = 0
+                
+                k_F = 0
+                k_I = 0
+                F_SI = 1
+                F_DI = 5
+                F_SWAP = 5
+                k_L += 2 * self.N
+
+                # (3) 
+                self.S_B[0] = self.cal_obj_func(self.S_B)
+                self.tabu_list = []
+
+            if (k >= 900 * math.sqrt(self.N) and k_BF >= 10 * self.N) or k_BT == 2 * k_L:
+                break
+        
+        print(self.S_BF)
+            
+
+
+
+                
 
         
 
@@ -256,7 +367,7 @@ class TabuSearch:
 
 
 if __name__ == '__main__':
-    init_S = (5456, [[(1, 116), (116, 117), (117, 2), (117, 119), (118, 114), (114, 113), (113, 112), (112, 107), (107, 110), (110, 112)], [(110, 111), (107, 108), (108, 109), (107, 106), (106, 105), (105, 104), (104, 102)], [(87, 86), (86, 85), (85, 84), (84, 82), (82, 80), (80, 79), (79, 78), (78, 77), (77, 46), (46, 43), (43, 37), (37, 36), (36, 38), (38, 39), (39, 40)], [(124, 126), (126, 130), (66, 67), (67, 68), (67, 69), (69, 71), (71, 72), (72, 73), (73, 44), (44, 45), (45, 34)], [(66, 62), (62, 63), (63, 64), (64, 65), (56, 55), (55, 54), (55, 140), (140, 49), (49, 48), (139, 34), (44, 43)], [(95, 96), (96, 97), (97, 98), (139, 33), (33, 11), (11, 8), (8, 6), (6, 5), (8, 9), (13, 12)], [(11, 12), (13, 14), (11, 27), (27, 28), (28, 29), (28, 30), (30, 32), (27, 25), (25, 24), (24, 20), (20, 22)]])
+    init_S = [5456, [[(1, 116), (116, 117), (117, 2), (117, 119), (118, 114), (114, 113), (113, 112), (112, 107), (107, 110), (110, 112)], [(110, 111), (107, 108), (108, 109), (107, 106), (106, 105), (105, 104), (104, 102)], [(87, 86), (86, 85), (85, 84), (84, 82), (82, 80), (80, 79), (79, 78), (78, 77), (77, 46), (46, 43), (43, 37), (37, 36), (36, 38), (38, 39), (39, 40)], [(124, 126), (126, 130), (66, 67), (67, 68), (67, 69), (69, 71), (71, 72), (72, 73), (73, 44), (44, 45), (45, 34)], [(66, 62), (62, 63), (63, 64), (64, 65), (56, 55), (55, 54), (55, 140), (140, 49), (49, 48), (139, 34), (44, 43)], [(95, 96), (96, 97), (97, 98), (139, 33), (33, 11), (11, 8), (8, 6), (6, 5), (8, 9), (13, 12)], [(11, 12), (13, 14), (11, 27), (27, 28), (28, 29), (28, 30), (30, 32), (27, 25), (25, 24), (24, 20), (20, 22)]]]
     parser = argparse.ArgumentParser()
     parser.add_argument('instance_file', help='the absolute path of the test CARP instance file')
     parser.add_argument('-t', dest='termination', help='a positive number which indicates how many seconds the algorithm can spend on this instance.')
@@ -269,5 +380,5 @@ if __name__ == '__main__':
     graph = Graph(carp.vertices, carp.matrix)
     graph.multiple_shortest_path()
     tabuSearch = TabuSearch(init_S, carp.required_edges, carp.capacity, graph)
-    # tabuSearch.run()
-    print(tabuSearch.is_feasible(init_S))
+    tabuSearch.run()
+    # print(tabuSearch.is_feasible(init_S))

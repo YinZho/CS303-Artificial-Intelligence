@@ -3,8 +3,9 @@ import numpy as np
 import random
 
 class RandomPS:
-    def __init__(self, carp, ):
+    def __init__(self, carp, random_seed):
         self.carp = carp
+        self.random_seed = random_seed
 
     def construct_free(self):
         free = list()
