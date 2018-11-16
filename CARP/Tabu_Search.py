@@ -10,12 +10,23 @@ from multiprocessing import Process, Manager
 
 
 class TabuSearch:
-    def __init__(self, S, N, graph):
+    def __init__(self, S, N, Q, graph):
         self.S = S
         self.S_B = S
         self.S_BF = S
         self.N = N
+        self.Q = Q
         self.graph = graph
+
+    def is_feasible(self, S):
+        cost, roads = S
+        for road in roads:
+            capacity = 0
+            for edge in road:
+                capacity += self.graph.edge_demand[edge[0]][edge[1]]
+            if capacity > self.Q:
+                return False
+        return True
 
 
     def cal_sol_cost(self, roads):
@@ -202,7 +213,7 @@ class TabuSearch:
             for i in range(len(road) - 1):
                 if road[i][1] != road[i + 1][0]:
                     not_adj[r_idx].append(i)
-        start = time.time()
+        # start = time.time()
         procs = []
         with Manager() as manager:
             neighbor_S = manager.list()
@@ -223,24 +234,8 @@ class TabuSearch:
             for proc in procs:
                 proc.join()    
 
-            print(neighbor_S)
-            end = time.time()
-            print("***multiprocessing***")
-            t = end-start
-            print(t)
-        neighbor_S = []
-        start = time.time()
-        self.gen_neighbor_SI(not_adj, neighbor_S)
-        self.gen_neighbor_DI(not_adj, neighbor_S)
-        self.gen_neighbor_SWAP(neighbor_S)
-        end = time.time()
-        print("***without multiprocessing***")
-        t = end -start
-        print(t)
+            return max(neighbor_S)
 
-        # print(move.values)
-
-        # self.cal_sol_cost(moves)
 
     def run(self):
         k = 0
@@ -250,7 +245,11 @@ class TabuSearch:
         F_DI = 5
         F_SWAP = 5
         P = 1
-        self.gen_neighbor()
+        k_F = 0
+        k_I = 0
+        for _ in range(10000):
+            self.gen_neighbor()
+
         
 
         
@@ -269,6 +268,6 @@ if __name__ == '__main__':
     carp = CARP(dict['name'], dict['vertices'], dict['depot'], dict['required_edges'], dict['non_required_edges'], dict['vehicles'], dict['capacity'], dict['total_cost_of_required_edges'], dict['matrix'])
     graph = Graph(carp.vertices, carp.matrix)
     graph.multiple_shortest_path()
-    tabuSearch = TabuSearch(init_S, carp.required_edges, graph)
-    tabuSearch.gen_neighbor()
-
+    tabuSearch = TabuSearch(init_S, carp.required_edges, carp.capacity, graph)
+    # tabuSearch.run()
+    print(tabuSearch.is_feasible(init_S))
