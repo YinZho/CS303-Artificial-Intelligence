@@ -2,6 +2,7 @@ import time
 import argparse
 import numpy as np
 from RandomPS import RandomPS
+from Tabu_Search import TabuSearch
 from Graph import Graph
 
 def read_file(file_name):
@@ -40,23 +41,24 @@ class CARP:
 
 
 if __name__ == "__main__":
-
+    start = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument('instance_file', help='the absolute path of the test CARP instance file')
     parser.add_argument('-t', dest='termination', help='a positive number which indicates how many seconds the algorithm can spend on this instance.')
     parser.add_argument('-s', dest='random_seed', help='the random seed used in this run.')
     parse_res = parser.parse_args()
 
-    strt_time = time.time()
     dict = read_file(parse_res.instance_file)
     
     carp = CARP(dict['name'], dict['vertices'], dict['depot'], dict['required_edges'], dict['non_required_edges'], dict['vehicles'], dict['capacity'], dict['total_cost_of_required_edges'], dict['matrix'])
     randomPS = RandomPS(carp, parse_res.random_seed)
-    # print(carp.matrix)
-    # print(carp.vertices)
-  
-    randomPS.run(1000)
-    end_time = time.time()
-    print("***time cnt***")
-    print(str(end_time - strt_time))
+    termination = int(parse_res.termination)
+    S = randomPS.run(termination * 0.5)
+    tabuSearch = TabuSearch(S, carp.required_edges, carp.capacity, carp.graph)
+    end = time.time()
+    best_S = tabuSearch.run(termination - (end - start))
+    randomPS.display(best_S[1], best_S[0])
+    end = time.time()
+    print(str(end - start))
+
     
