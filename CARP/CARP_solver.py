@@ -2,6 +2,7 @@ import time
 import argparse
 import numpy as np
 from RandomPS import RandomPS
+from Tabu_Search import TabuSearch
 from Graph import Graph
 
 def read_file(file_name):
@@ -47,16 +48,20 @@ if __name__ == "__main__":
     parser.add_argument('-s', dest='random_seed', help='the random seed used in this run.')
     parse_res = parser.parse_args()
 
-    strt_time = time.time()
+    curtime = time.time()
     dict = read_file(parse_res.instance_file)
+    termination = parse_res.termination
     
     carp = CARP(dict['name'], dict['vertices'], dict['depot'], dict['required_edges'], dict['non_required_edges'], dict['vehicles'], dict['capacity'], dict['total_cost_of_required_edges'], dict['matrix'])
-    randomPS = RandomPS(carp, parse_res.random_seed)
+    randomPS = RandomPS(carp)
     # print(carp.matrix)
     # print(carp.vertices)
-  
-    randomPS.run(1000)
+    
+    S = randomPS.run(termination*0.05)
+    # randomPS.display(S[1], S[0])
+    tabuSearch = TabuSearch(S, carp.required_edges, carp.capacity, carp.graph)
+    tabuSearch.run(termination - time.time() + curtime)
     end_time = time.time()
     print("***time cnt***")
-    print(str(end_time - strt_time))
+    print(str(time.time() - curtime))
     

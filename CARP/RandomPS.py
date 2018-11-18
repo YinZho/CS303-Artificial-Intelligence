@@ -1,11 +1,13 @@
 import math
+import time
 import numpy as np
 import random
 
+
 class RandomPS:
-    def __init__(self, carp, random_seed):
+    def __init__(self, carp):
         self.carp = carp
-        self.random_seed = random_seed
+        
 
     def construct_free(self):
         free = list()
@@ -62,41 +64,33 @@ class RandomPS:
             rtn_cost = self.carp.graph.mul_sp[i][1]
             cost[k] = cost[k] + rtn_cost
             k = k + 1
-        return(sum(cost), road)
+        return [sum(cost), road]
         # self.display(road, cost)
 
-    def display(self, road, cost):
-        # print("***road and cost***")
-        
-        mssg = "s "
-        for r in road:
-            mssg += "0,"
-            for t in r:
-                mssg += "(" + str(t[0]) + "," + str(t[1]) + "),"
-            mssg += "0,"
-        mssg = mssg[0: -1]
-        print(mssg)
-        print("q " + str(cost))
+    def s_format (self, s):
+        s_print = []
+        for p in s:
+            s_print.append(0)
+            s_print.extend(p)
+            s_print.append(0)
+        return s_print
 
-        # cnt = 0
-
-        # for i in road:
-        #        cnt = cnt + len(i)
-        # print("\n***edge cnt***")
-        # print(str(cnt)) 
-
-        # cnt = 0
-        # print("\n***vehicles cnt***")
-        # print(str(len(road)))
+    def display(self, road, cost):  
+        print("s", (",".join(str(d) for d in self.s_format(road))).replace(" ", ""))
+        print("q", cost)
 
 
-    def run(self, rpt_time):
+    def run(self, t):
+        start = time.time()
         best_res = None
-        for _ in range(rpt_time):
+        end = start
+        while end - start < t:
             cost, road = self.path_scanning()
             if best_res is None:
-                best_res = (cost, road)
+                best_res = [cost, road]
             if cost < best_res[0]:
-                best_res = (cost, road)
-        
-        self.display(best_res[1], best_res[0])
+                best_res = [cost, road]
+            end = time.time()
+        return best_res
+        # self.display(best_res[1], best_res[0])
+
