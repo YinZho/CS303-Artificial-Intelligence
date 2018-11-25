@@ -1,9 +1,11 @@
 import time
+import random
 import argparse
 import numpy as np
 from RandomPS import RandomPS
 from Tabu_Search import TabuSearch
 from Graph import Graph
+from multiprocessing import Pool
 
 def read_file(file_name):
     dict = {'matrix': np.empty((0, 4), int)}
@@ -47,21 +49,24 @@ if __name__ == "__main__":
     parser.add_argument('-t', dest='termination', help='a positive number which indicates how many seconds the algorithm can spend on this instance.')
     parser.add_argument('-s', dest='random_seed', help='the random seed used in this run.')
     parse_res = parser.parse_args()
-
+    
     curtime = time.time()
     dict = read_file(parse_res.instance_file)
-    termination = parse_res.termination
-    
+    termination = int(parse_res.termination)
     carp = CARP(dict['name'], dict['vertices'], dict['depot'], dict['required_edges'], dict['non_required_edges'], dict['vehicles'], dict['capacity'], dict['total_cost_of_required_edges'], dict['matrix'])
     randomPS = RandomPS(carp)
-    # print(carp.matrix)
-    # print(carp.vertices)
-    
-    S = randomPS.run(termination*0.05)
-    # randomPS.display(S[1], S[0])
-    tabuSearch = TabuSearch(S, carp.required_edges, carp.capacity, carp.graph)
-    tabuSearch.run(termination - time.time() + curtime)
-    end_time = time.time()
-    print("***time cnt***")
-    print(str(time.time() - curtime))
+    ans = []
+    for _ in range(5):
+        with Pool(8) as p:
+            res = p.map(randomPS.run, [termination*0.05 for i in range(8)])
+        S = min(res)
+        tabuSearch = TabuSearch(S, carp.required_edges, carp.capacity, carp.graph, carp.vehicles)
+        with Pool(8) as p:
+            best_S = p.map(tabuSearch.run, [termination*0.95 for i in range(8)])
+        
+        best = min(best_S)
+        ans.append(best[0])
+    print(max(ans))
+    print(min(ans))
+
     

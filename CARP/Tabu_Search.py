@@ -2,6 +2,7 @@ import time
 import copy
 import math
 import heapq
+import random
 import logging
 import numpy as np
 from Graph import Graph
@@ -11,14 +12,15 @@ from multiprocessing import Process, Manager, Pool
 
 
 class TabuSearch:
-    def __init__(self, S, N, Q, graph):
-        self.S = S
-        self.S_B = S
-        self.S_BF = S
+    def __init__(self, S, N, Q, graph, V):
+        self.S = copy.deepcopy(S)
+        
+        self.S_BF = copy.deepcopy(S)
         self.N = N
         self.Q = Q
         self.P = 1
         self.graph = graph
+        self.V = V
         self.tabu_list = list()
         
 
@@ -45,10 +47,27 @@ class TabuSearch:
             w += w_tmp
         return [cost, self.P * w]
 
+    def cal_road_cost(self,road):
+        cost = 0
+        r_len = len(road) 
+        if r_len >= 2:           
+            cost += self.graph.adj_matrix[road[0][0]][road[0][1]]
+            cost += self.graph.mul_sp[1][road[0][0]]
+            cost += self.graph.mul_sp[road[0][1]][road[1][0]]
+            for i in range(1, r_len-1):
+                cost += self.graph.adj_matrix[road[i][0]][road[i][1]]
+                cost += self.graph.mul_sp[road[i][1]][road[i+1][0]]
+            cost += self.graph.adj_matrix[road[r_len-1][0]][road[r_len-1][1]]
+            cost += self.graph.mul_sp[road[r_len-1][1]][1]
+        elif r_len == 1:
+            cost += self.graph.adj_matrix[road[0][0]][road[0][1]]
+            cost += self.graph.mul_sp[1][road[0][0]]
+            cost += self.graph.mul_sp[road[0][1]][1]
+        return cost
+
     def cal_sol_cost(self, S):
         roads = S[1]
         cost = 0
-
         for road in roads:
             r_len = len(road) 
             if r_len >= 2:           
@@ -75,7 +94,7 @@ class TabuSearch:
 
     def gen_neighbor_SI(self):
         best_S = [math.inf]
-        s_roads = self.S[1]
+        s_roads = copy.deepcopy(self.S[1])
         combine = []
         for i in range(len(s_roads)):
             for j in range(i, len(s_roads)):
@@ -125,15 +144,13 @@ class TabuSearch:
                             self.S_BF = [cost, copy.deepcopy(s_roads)]
                     del s_roads[j][0]
                 s_roads[i].insert(k, edge)
-        # print(str(return_dict) + "  " + str(dict_i)) 
-        # print(best_S)
         return best_S
 
     
     
     def gen_neighbor_DI(self):
         best_S = [math.inf]
-        s_roads = self.S[1]
+        s_roads = copy.deepcopy(self.S[1])
         combine = []
         for i in range(len(s_roads)):
             for j in range(i, len(s_roads)):
@@ -198,15 +215,14 @@ class TabuSearch:
 
                 s_roads[i].insert(k, edge_0)
                 s_roads[i].insert(k+1, edge_1)
-        # print(best_S)
-        # print(str(return_dict) + "  " + str(dict_i)) 
+
         return best_S
 
 
 
-    def gen_neighbor_SWAP(self):
+    def gen_neighbor_SW(self):
         best_S = [math.inf]
-        s_roads = self.S[1]
+        s_roads = copy.deepcopy(self.S[1])
         combine = []
         for i in range(len(s_roads)):
             for j in range(i, len(s_roads)):
@@ -232,51 +248,110 @@ class TabuSearch:
 
                     s_roads[i][k] = x
                     s_roads[j][g] = y
-        # print(str(return_dict) + "  " + str(dict_i))
-        # print(best_S) 
+    
         return best_S
+
+
+    def gen_neighbor_MS(self):
+        best_S = [math.inf]
+        s_roads = copy.deepcopy(self.S[1])
+        road_cost = [0 for i in range(len(s_roads))]
+        for r in range(len(s_roads)):
+            road_cost[r] = self.cal_road_cost(s_roads[r])
+        s_cost = sum(road_cost)
+
+        combine = []
+        for x in range(len(s_roads)):
+            for y in range(x+1, len(s_roads)):
+                combine.append([x,y])
+        for com in combine:
+            e_0,e_1 = com
+            # print(str(e_0) + "  merge with  " +str(e_1))
+            k = 0
+            road = list()
+            load = list()
+            cost = list()
+            free = copy.deepcopy(s_roads[e_0]) + copy.deepcopy(s_roads[e_1])
+            free_1 = copy.deepcopy(free)
+            for i in free_1:
+                free.append((i[1], i[0]))
+            del free_1
+            while free:
+                road.append(list())
+                load.append(0)
+                cost.append(0)
+                i = 1
+                while True:
+                    d_min = math.inf
+                    for u in free:
+                        d = self.graph.mul_sp[i][u[0]] 
+                        if d < d_min:
+                            d_min = d
+                            u_slt = u
+                        elif d == d_min:
+                            choice = random.randint(0,1)
+                            if choice == 1:
+                                u_slt = u
+                    
+                    if not free or d_min == math.inf:
+                        break
         
+                    if load[k] + self.graph.edge_demand[u_slt[0]][u_slt[1]] > self.Q:
+                        break
+                    
+                    road[k].append(u_slt)
+                    free.remove(u_slt)
+                    free.remove((u_slt[1], u_slt[0]))
+                    u_slt_dmnd = self.graph.edge_demand[u_slt[0]][u_slt[1]]
+                    u_slt_cost = self.graph.adj_matrix[u_slt[0]][u_slt[1]]
+                    load[k] = load[k] + u_slt_dmnd
+                    cost[k] = cost[k] + d_min + u_slt_cost
+                    i = u_slt[1]
+                    
+                rtn_cost = self.graph.mul_sp[i][1]
+                cost[k] = cost[k] + rtn_cost
+                k = k + 1
 
-    def gen_neighbor(self, k, F_SI, F_DI, F_SWAP):
+            cost_of_two = sum(cost)
+            v = s_cost + cost_of_two - (road_cost[e_0] + road_cost[e_1])
+            if  v < best_S[0] and not self.is_in_tabu_list(v) and len(road) <= 2:
+                tmp = copy.deepcopy(self.S[1]) 
+                if e_0 < e_1:
+                    del tmp[e_0]
+                    del tmp[e_1-1]
+                else:
+                    del tmp[e_1]
+                    del tmp[e_0-1]
+                for r in road:
+                    tmp.append(r)
+                best_S = [v, tmp]
+                if v < self.S_BF[0]:
+                    if self.is_feasible(best_S):
+                        self.S_BF = copy.deepcopy(best_S)
+             
 
-        manager = Manager()
-        # best_S = manager.list([math.inf, math.inf, math.inf])
-        # jobs = []
-        # start = time.time()
-        # if k % F_SI == 0:
-        #     # print("SI")
-        #     p = Process(target=self.gen_neighbor_SI, args=(0,best_S))
-        #     jobs.append(p)
-        #     p.start()
-        # if k % F_DI == 0:
-        #     # print("DI")
-        #     p = Process(target=self.gen_neighbor_DI, args=(1,best_S))
-        #     jobs.append(p)
-        #     p.start()
-        # if k % F_SWAP == 0:
-        #     p = Process(target=self.gen_neighbor_SWAP, args=(2,best_S))
-        #     jobs.append(p)
-        #     p.start()
-        # for proc in jobs:
-        #     proc.join()
-        # end = time.time()
-        # print("Multiple threading time: " + str(end - start))
-        best_S = [math.inf for i in range(3)]
+        return best_S
+
+
+    def gen_neighbor(self, k):
+        # curtime = time.time()
+        best_S = [math.inf for i in range(4)]
         
         best_S[0] = self.gen_neighbor_SI()
         best_S[1] = self.gen_neighbor_DI()
-        best_S[2] = self.gen_neighbor_SWAP()
+        best_S[2] = self.gen_neighbor_SW()
+        best_S[3] = self.gen_neighbor_MS()
     
         # print("Without multiple threading time:" + str(time.time() - curtime))
         idx = best_S.index(min(best_S))   
         best_Val = min(best_S) 
-        m = {0:'SI', 1:'DI', 2:'SWAP'}
+        m = {0:'SI', 1:'DI', 2:'SW', 3:"MS"}
+        # print(best_Val)
+        # if self.is_feasible(best_Val):
+        #     print(str(k) + "   " + str(best_Val[0]) + "  ------  " + str(self.S_BF[0])+ "   " + str(self.P)+ "   " + m[idx])
+        # else:
+        #     print(str(k) + "   " + "False   " + str(best_Val[0]) + "   " + str(self.S_BF[0]) + "   " + str(self.P) + "   " + m[idx])
         
-        # print(self.is_in_tabu_list(self.cal_sol_cost(best_Val)))
-        if self.is_feasible(best_Val):
-            print(str(k) + "   " + str(best_Val[0]) + "  ------  " + str(self.S_BF[0])+ "   " + str(self.P)+ "   " + m[idx])
-        else:
-            print(str(k) + "   " + "False   " + str(best_Val[0]) + "   " + str(self.S_BF[0]) + "   " + str(self.P) + "   " + m[idx])
         
         return best_Val
 
@@ -284,20 +359,14 @@ class TabuSearch:
 
 
     def run(self, t):
-        print("min: " + str(self.S_B[0]))
+        # print("min: " + str(self.S_BF[0]))
+        curtime = time.time()
         k = 0
         tenure = self.N
-        F_SI = 1
-        F_DI = 1
-        F_SWAP = 1
         k_F = 0
         k_I = 0
-        k_B = 0 
-        k_L = 8 * self.N
-        k_BF = 0
-        k_BT = 0
         while True:
-            s = self.gen_neighbor(k, F_SI, F_DI, F_SWAP)  
+            s = self.gen_neighbor(k)  
             self.S = s
             if len(self.tabu_list) > 0:
                 for i, e in enumerate(self.tabu_list):
@@ -319,53 +388,21 @@ class TabuSearch:
                 k_F += 1
             else:
                 k_I += 1
-
-            if self.is_feasible(s) and s[0] < self.S_BF[0]:
-                k_B = 0
-                k_BT = 0
-
-            if s[0] < self.S_B[0]:
-                self.S_B = s
-                k_B += 1
-                k_BF += 1
-                k_BT += 1
             
             if k_F == 5:
-                # print("***Penalty Half!***")
                 self.P = self.P / 2
             elif k_I == 5:
-                # print("***Penalty Double!***")
                 self.P = 2 * self.P
-                if self.P >= 4:
+                if self.P >= 64:
                     self.S = copy.deepcopy(self.S_BF)
+                    self.P = 2
            
             if k_F == 5 or k_I == 5:
-                self.S_B[0] = sum(self.cal_obj_func(self.S_B))
                 self.S[0] = sum(self.cal_obj_func(self.S))
                 k_F = 0
                 k_I = 0
-
-            if k_B == k_L // 2:
-                F_SI = 1
-                F_DI = 1
-                F_SWAP = 1
-            
-            if k_B == k_L:
-                self.S = self.S_BF
-                k_B = 0
-                p = 1
-                k_F = 0
-                k_I = 0
-                F_SI = 1
-                F_DI = 1
-                F_SWAP = 1
-                k_L += 2 * self.N
-                self.S_B[0] = sum(self.cal_obj_func(self.S_B))
-                self.tabu_list = []
-        
-            end = time.time()
-            # print(str(start) + "    " + str(end))
-            # if end - start > t - 1:
-            #     break
+    
+            if time.time() - curtime > t - 1:
+                break
         return self.S_BF
     
