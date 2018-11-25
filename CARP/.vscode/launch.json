@@ -12,7 +12,11 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
+<<<<<<< HEAD
                 "./CARP_samples/eglese/egl-e1-A.dat", "-t 120", "-s 5"                
+=======
+                "./CARP_samples/egl-s1-A.dat", "-t 120", "-s 5"                
+>>>>>>> 045905b72dba6cc48d3a070ce2c4cbefc4249215
             ]
         },        
         {

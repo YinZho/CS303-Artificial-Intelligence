@@ -43,7 +43,7 @@ class CARP:
 
 
 if __name__ == "__main__":
-
+    start = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument('instance_file', help='the absolute path of the test CARP instance file')
     parser.add_argument('-t', dest='termination', help='a positive number which indicates how many seconds the algorithm can spend on this instance.')
@@ -55,6 +55,7 @@ if __name__ == "__main__":
     termination = int(parse_res.termination)
     carp = CARP(dict['name'], dict['vertices'], dict['depot'], dict['required_edges'], dict['non_required_edges'], dict['vehicles'], dict['capacity'], dict['total_cost_of_required_edges'], dict['matrix'])
     randomPS = RandomPS(carp)
+<<<<<<< HEAD
     ans = []
     for _ in range(5):
         with Pool(8) as p:
@@ -68,5 +69,17 @@ if __name__ == "__main__":
         ans.append(best[0])
     print(max(ans))
     print(min(ans))
+=======
+    with Pool(8) as p:
+        res = p.map(randomPS.run, [termination for i in range(8)])
+    S = min(res)
+    tabuSearch = TabuSearch(S, carp.required_edges, carp.capacity, carp.graph, carp.vehicles)
+    with Pool(8) as p:
+    best_S = p.map(tabuSearch.run, [(termination - time.time() + curtime) for i in range(8)])
+    
+    best = min(best_S)
+    randomPS.display(best[1], best[0])
+    print(str(time.time() - start))
+>>>>>>> 045905b72dba6cc48d3a070ce2c4cbefc4249215
 
     

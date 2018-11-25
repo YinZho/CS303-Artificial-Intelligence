@@ -402,7 +402,11 @@ class TabuSearch:
                 k_F = 0
                 k_I = 0
     
+<<<<<<< HEAD
             if time.time() - curtime > t - 1:
+=======
+            if time.time() - curtime > t - 5:
+>>>>>>> 045905b72dba6cc48d3a070ce2c4cbefc4249215
                 break
         return self.S_BF
     
