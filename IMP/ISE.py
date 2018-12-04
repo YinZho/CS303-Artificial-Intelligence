@@ -51,9 +51,15 @@ def read_social_network_graph(file_name):
     return Graph(vertices, edges, edge_weight, adj_list, neighbor)
     
 
-def LT_model(graph: Graph, N: int):
+def LT_model(graph: Graph, time_budget):
+    curtime = time.time()
+
+    N = 0
     sum = 0
-    for _ in range(N):
+    last_time = 0
+    while True:
+        star_time = time.time()
+
         activity_set = copy.deepcopy(seed_set)
         thresholds = [0 for i in range(graph.vertices)]
         isActive = [False for i in range(graph.vertices)]
@@ -88,26 +94,70 @@ def LT_model(graph: Graph, N: int):
             count += len(new_activity_set)
             activity_set = copy.deepcopy(new_activity_set)
         # print(count)
+        N += 1
         sum += count
 
+        last_time = time.time() - star_time
+        if last_time + time.time() - curtime > time_budget - 1:
+            break  
     return sum / N
-
-
-
     
 
+def IC_model(graph: Graph, time_budget):
+    curtime = time.time()
 
+    N = 0
+    sum = 0
+    last_time = 0
+    while True:
+        star_time = time.time()
+
+        activity_set = copy.deepcopy(seed_set)
+        isActive = [False for i in range(graph.vertices)]
+
+        # initialize isActive      
+        for e in activity_set:
+            isActive[e] = True
+    
+        count = len(activity_set)
+
+        while activity_set:
+            new_activity_set = []
+            for seed in activity_set:
+                for u in graph.adj_list[seed]:
+                    if isActive[u] is False:
+                        rand_num = random.random()
+                        if rand_num <= graph.edge_weight[seed][u]:
+                            isActive[u] = True
+                            new_activity_set.append(u)
+            count += len(new_activity_set)
+            activity_set = copy.deepcopy(new_activity_set)
+        
+        N += 1
+        sum += count
+        last_time = time.time() - star_time
+        if last_time + time.time() - curtime > time_budget - 1:
+            break  
+    return sum / N
+        
 
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('-i', dest='social_network' ,help='the absolute path of the social network file')
-    # parser.add_argument('-s', dest='seed_set', help='the absolute path of the seed set file')
-    # parser.add_argument('-m', dest='diffusion_model', help='only be IC or LT')
-    # parser.add_argument('-t', dest='time_budget', help='the seconds that my algorithm can spend on this instance')
-    read_seed_set('IMP2018/seeds1.txt')
-    graph = read_social_network_graph('IMP2018/NetHEPT.txt')
     curtime = time.time()
-    print(LT_model(graph, 10000))
-    print(str(time.time() - curtime))
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', dest='social_network' ,help='the absolute path of the social network file')
+    parser.add_argument('-s', dest='seed_set', help='the absolute path of the seed set file')
+    parser.add_argument('-m', dest='diffusion_model', help='only be IC or LT')
+    parser.add_argument('-t', dest='time_budget', help='the seconds that my algorithm can spend on this instance')
+    parse_res = parser.parse_args()
+    
+    read_seed_set(parse_res.seed_seed)
+    graph = read_social_network_graph(parse_res.social_network)
+    if parse_res.diffusion_model == 'IC':
+        print(IC_model(graph, parse_res.time_budget - curtime))
+    else:
+        print(IC_model(graph, parse_res.time_budget - curtime))
+    
+    
     
