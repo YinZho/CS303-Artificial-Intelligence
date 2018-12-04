@@ -100,6 +100,7 @@ def LT_model(graph: Graph, time_budget):
         last_time = time.time() - star_time
         if last_time + time.time() - curtime > time_budget - 1:
             break  
+    print('N: '+str(N))
     return sum / N
     
 
@@ -138,6 +139,7 @@ def IC_model(graph: Graph, time_budget):
         last_time = time.time() - star_time
         if last_time + time.time() - curtime > time_budget - 1:
             break  
+    print('N: '+str(N))
     return sum / N
         
 
@@ -149,15 +151,17 @@ if __name__ == "__main__":
     parser.add_argument('-i', dest='social_network' ,help='the absolute path of the social network file')
     parser.add_argument('-s', dest='seed_set', help='the absolute path of the seed set file')
     parser.add_argument('-m', dest='diffusion_model', help='only be IC or LT')
-    parser.add_argument('-t', dest='time_budget', help='the seconds that my algorithm can spend on this instance')
+    parser.add_argument('-t', dest='time_budget', type=int, help='the seconds that my algorithm can spend on this instance')
     parse_res = parser.parse_args()
     
-    read_seed_set(parse_res.seed_seed)
+    read_seed_set(parse_res.seed_set)
     graph = read_social_network_graph(parse_res.social_network)
     if parse_res.diffusion_model == 'IC':
-        print(IC_model(graph, parse_res.time_budget - curtime))
-    else:
-        print(IC_model(graph, parse_res.time_budget - curtime))
+        print(str(IC_model(graph, parse_res.time_budget - (time.time() - curtime))))
+    elif parse_res.diffusion_model == 'LT':
+        print(str(LT_model(graph, parse_res.time_budget - (time.time() - curtime))))
+    
+    print(str(time.time() - curtime))
     
     
     
