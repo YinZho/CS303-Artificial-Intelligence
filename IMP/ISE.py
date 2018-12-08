@@ -52,14 +52,14 @@ def read_social_network_graph(file_name):
     
 
 def LT_model(graph: Graph, time_budget):
-
+    curtime = time.time()
     sum = 0
     N = 0
     last_time = 0
     while True:
         startime = time.time()
-        if time.time() - startime + last_time > time_budget - 1 or N >= 10000:
-            break;
+        if time.time() - curtime + last_time > time_budget - 1 or N >= 10000:
+            break
 
         activity_set = copy.deepcopy(seed_set)
         thresholds = [0 for i in range(graph.vertices+1)]
@@ -104,14 +104,14 @@ def LT_model(graph: Graph, time_budget):
     
 
 def IC_model(graph: Graph, time_budget):
-
+    curtime = time.time()
     sum = 0
     N = 0
     last_time = 0
     while True:
         startime = time.time()
-        if time.time() - startime + last_time > time_budget - 1 or N >= 10000:
-            break;
+        if time.time() - curtime + last_time > time_budget - 1 or N >= 10000:
+            break
 
         activity_set = copy.deepcopy(seed_set)
         isActive = [False for i in range(graph.vertices)]
@@ -153,9 +153,6 @@ if __name__ == "__main__":
     
     read_seed_set(parse_res.seed_set)
     graph = read_social_network_graph(parse_res.social_network)
-    
-    curtime = time.time()
-
     if parse_res.diffusion_model == 'IC':
         print(str(IC_model(graph, int(parse_res.time_budget) - (time.time() - curtime))))
     elif parse_res.diffusion_model == 'LT':
