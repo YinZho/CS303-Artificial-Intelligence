@@ -39,9 +39,9 @@ def read_social_network_graph(file_name):
             
             if i == 0:
                 vertices, edges = line
-                adj_list = [list() for i in range(vertices)]
-                neighbor = [list() for i in range(vertices)]
-                edge_weight = [defaultdict() for i in range(vertices)]
+                adj_list = [list() for i in range(vertices+1)]
+                neighbor = [list() for i in range(vertices+1)]
+                edge_weight = [defaultdict() for i in range(vertices+1)]
             else:
                 u,v,w = line
                 adj_list[u].append(v)
@@ -52,25 +52,28 @@ def read_social_network_graph(file_name):
     
 
 def LT_model(graph: Graph, time_budget):
-    curtime = time.time()
 
-    N = 0
     sum = 0
+    N = 0
     last_time = 0
     while True:
-        star_time = time.time()
+        startime = time.time()
+        if time.time() - startime + last_time > time_budget - 1 or N >= 10000:
+            break;
 
         activity_set = copy.deepcopy(seed_set)
-        thresholds = [0 for i in range(graph.vertices)]
-        isActive = [False for i in range(graph.vertices)]
+        thresholds = [0 for i in range(graph.vertices+1)]
+        isActive = [False for i in range(graph.vertices+1)]
 
         # initialize threshold
-        for i in range(len(thresholds)):
-
-            rand_num = random.random()
-            thresholds[i] = rand_num
-            if rand_num == 0:
-                activity_set.append(i)
+        for i in range(len(thresholds)):          
+            if i == 0:
+                thresholds[i] = math.inf
+            else:
+                rand_num = random.random()
+                thresholds[i] = rand_num
+                if rand_num == 0:
+                    activity_set.append(i)
 
         count = len(activity_set)   
 
@@ -93,25 +96,22 @@ def LT_model(graph: Graph, time_budget):
                             new_activity_set.append(u)
             count += len(new_activity_set)
             activity_set = copy.deepcopy(new_activity_set)
-        # print(count)
-        N += 1
-        sum += count
 
-        last_time = time.time() - star_time
-        if last_time + time.time() - curtime > time_budget - 1:
-            break  
-    print('N: '+str(N))
+        N += 1
+        sum += count 
+        last_time = time.time() - startime
     return sum / N
     
 
 def IC_model(graph: Graph, time_budget):
-    curtime = time.time()
 
-    N = 0
     sum = 0
+    N = 0
     last_time = 0
     while True:
-        star_time = time.time()
+        startime = time.time()
+        if time.time() - startime + last_time > time_budget - 1 or N >= 10000:
+            break;
 
         activity_set = copy.deepcopy(seed_set)
         isActive = [False for i in range(graph.vertices)]
@@ -132,21 +132,18 @@ def IC_model(graph: Graph, time_budget):
                             isActive[u] = True
                             new_activity_set.append(u)
             count += len(new_activity_set)
-            activity_set = copy.deepcopy(new_activity_set)
+            activity_set = new_activity_set
         
         N += 1
-        sum += count
-        last_time = time.time() - star_time
-        if last_time + time.time() - curtime > time_budget - 1:
-            break  
-    print('N: '+str(N))
+        sum += count 
+        last_time = time.time() - startime
+
     return sum / N
         
 
 
 if __name__ == "__main__":
     curtime = time.time()
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', dest='social_network' ,help='the absolute path of the social network file')
     parser.add_argument('-s', dest='seed_set', help='the absolute path of the seed set file')
@@ -156,12 +153,13 @@ if __name__ == "__main__":
     
     read_seed_set(parse_res.seed_set)
     graph = read_social_network_graph(parse_res.social_network)
-    if parse_res.diffusion_model == 'IC':
-        print(str(IC_model(graph, parse_res.time_budget - (time.time() - curtime))))
-    elif parse_res.diffusion_model == 'LT':
-        print(str(LT_model(graph, parse_res.time_budget - (time.time() - curtime))))
     
-    print(str(time.time() - curtime))
+    curtime = time.time()
+
+    if parse_res.diffusion_model == 'IC':
+        print(str(IC_model(graph, int(parse_res.time_budget) - (time.time() - curtime))))
+    elif parse_res.diffusion_model == 'LT':
+        print(str(LT_model(graph, int(parse_res.time_budget) - (time.time() - curtime))))
     
     
     
