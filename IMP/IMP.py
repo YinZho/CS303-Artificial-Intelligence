@@ -1,9 +1,11 @@
 import os
 import math
+import copy
 import time
 import heapq
 import random
 import argparse
+
 from collections import defaultdict
 from multiprocessing import Pool
 '''
@@ -46,11 +48,8 @@ def read_social_network_graph(file_name):
                 u,v,w = line
                 adj_list[u].append(v)
                 adj_list_rev[v].append(u)
-                edge_weight[u][v] = w
-                edge_weight[v][u] = w
-                
+                edge_weight[u][v] = w   
     return Graph(vertices, edges, adj_list, adj_list_rev, edge_weight)
-
 
 def node_selection(R: list, k: int):
     S = set()
@@ -61,7 +60,7 @@ def node_selection(R: list, k: int):
                 node_edges[v].add(i)
             else:
                 node_edges[v] = {i}
-    
+
     max_heap = list()
     for key, value in node_edges.items():
         max_heap.append([-len(value), key, 0])
@@ -71,22 +70,21 @@ def node_selection(R: list, k: int):
     i = 0
     while i < k:
         val = heapq.heappop(max_heap)
-        if val[2] != i:
+        if val[2] == i:
+            S.add(val[1])
+            i += 1
+            covered_set |= node_edges[val[1]]
+        else:
             node_edges[val[1]] -= covered_set
             val[0] = - len(node_edges[val[1]])
             val[2] = i
             heapq.heappush(max_heap, val)
             
-        else:
-            S.add(val[1])
-            i += 1
-            covered_set = covered_set.union(node_edges[val[1]])
-            
-    return [len(covered_set) / len(R), S]
+    return len(covered_set) / len(R), S
 
 
 
-def sampling_IC(cnt):
+def get_rr_IC(cnt):
     R = list()
     for _ in range(cnt):
         rand_v = random.randint(1, n)
@@ -97,14 +95,14 @@ def sampling_IC(cnt):
             new_activity_set = set()
             for seed in activity_set:
                 for u in graph.adj_list_rev[seed]:
-                    if u not in isActived and random.random() <= graph.edge_weight[u][seed]:
-                        isActived.add(u)
+                    if u not in isActived and random.uniform(0.0, 1.0) < graph.edge_weight[u][seed]:
                         new_activity_set.add(u)
+                        isActived.add(u)
             activity_set = new_activity_set          
         R.append(isActived)
     return R
 
-def sampling_LT(cnt): 
+def get_rr_LT(cnt): 
     R = list()
     for _ in range(cnt):         
         rand_v = random.randint(1, n)
@@ -131,21 +129,22 @@ def sampling(graph: Graph, k: int, epsilon, l, mode):
     n = graph.vertices
     epsilon_prime = math.sqrt(2) * epsilon
     f = math.factorial
-    lambda_prime = (2 + (2 / 3) * epsilon_prime) * (math.log(f(n) // f(k) // f(n-k)) + l * math.log(n) + math.log(math.log(n, 2))) * n / math.pow(epsilon_prime, 2)
+    comb_kb = math.log(f(n) // f(k) // f(n-k))
+    lambda_prime = (2 + (2 / 3) * epsilon_prime) * (comb_kb + l * math.log(n) + math.log(math.log(n, 2))) * n / math.pow(epsilon_prime, 2)
     alpha = math.sqrt(l*math.log(n) + math.log(2))
-    beta = math.sqrt((1 - 1 / math.e)*(math.log(f(n) // f(k) // f(n-k)) + l* math.log(n) + math.log(2)))
+    beta = math.sqrt((1 - 1 / math.e)*(comb_kb + l* math.log(n) + math.log(2)))
     lambda_star = 2 * n * math.pow(((1 - 1/math.e) * alpha + beta), 2) * math.pow(epsilon, -2)
 
     for i in range(1, int(math.log(n, 2))):
         x = n / math.pow(2, i)
         theta = lambda_prime / x
-        print("theta: " + str(theta))
-        curtime = time.time()
+        # print("theta: " + str(theta))
+        # curtime = time.time()
         if mode == 'IC':
-            res = sampling_IC(math.ceil(theta-len(R)))
+            res = get_rr_IC(math.ceil(theta-len(R)))
         elif mode == 'LT':
-            res = sampling_LT(math.ceil(theta-len(R)))
-        print("sampling phase time: " + str(time.time() - curtime))
+            res = get_rr_LT(math.ceil(theta-len(R)))
+        # print("sampling phase time: " + str(time.time() - curtime))
         R += res
         # start = time.time()
         FR = node_selection(R, k)[0]
@@ -159,9 +158,9 @@ def sampling(graph: Graph, k: int, epsilon, l, mode):
     theta = lambda_star / LB
 
     if mode == 'IC':
-        res = sampling_IC(math.ceil(theta-len(R)))
+        res = get_rr_IC(math.ceil(theta-len(R)))
     elif mode == 'LT':
-        res = sampling_LT(math.ceil(theta-len(R)))
+        res = get_rr_LT(math.ceil(theta-len(R)))
     R += res
     return R
         
@@ -173,20 +172,19 @@ def IMM(graph: Graph, k: int, epsilon, l, mode):
     S = node_selection(R, k)[1]
     return S
     
-def ISE(S, model):
-    print('''==================ISE TEST=================''')
-    with open('IMP2018/seeds_out.txt', 'w') as fp:
-        for s in S:
-            fp.write('{s}\n'.format(s=s))
-    if model == 'IC':
-        os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m IC -t 60')
-    elif model == 'LT':
-        os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m LT -t 60')
+# def ISE(S, model):
+#     print('''==================ISE TEST=================''')
+#     with open('IMP2018/seeds_out.txt', 'w') as fp:
+#         for s in S:
+#             fp.write('{s}\n'.format(s=s))
+#     if model == 'IC':
+#         os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m IC -t 60')
+#     elif model == 'LT':
+#         os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m LT -t 60')
 
 
 if __name__ == "__main__":
     curtime = time.time()
-    random.seed(1)
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', dest='social_network' ,help='the absolute path of the social network file')
     parser.add_argument('-k', dest='seed_size', help='predefined size of the seed set')
@@ -205,15 +203,13 @@ if __name__ == "__main__":
     l = 1
     model = parse_res.diffusion_model
     S = IMM(graph, k, epsilon, l, model)
+    # for i in range(100):
+    #     print(get_rr_IC(1))
 
     for s in S:
         print(s)
     
-    print("elapsed time: ", time.time() - curtime)
-    ISE(S, model)
+    # print("elapsed time: ", time.time() - curtime)
+    # ISE(S, model)
 
 
-
-
-    
-    
