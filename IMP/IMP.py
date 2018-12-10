@@ -53,7 +53,6 @@ def read_social_network_graph(file_name):
 
 
 def node_selection(R: list, k: int):
-    # print(len(R))
     S = set()
     node_edges = dict()
     for i, RR in enumerate(R):
@@ -80,7 +79,6 @@ def node_selection(R: list, k: int):
             
         else:
             S.add(val[1])
-            # print("node selet: ", val[1], -val[0])
             i += 1
             covered_set = covered_set.union(node_edges[val[1]])
             
@@ -99,7 +97,7 @@ def sampling_IC(cnt):
             new_activity_set = set()
             for seed in activity_set:
                 for u in graph.adj_list_rev[seed]:
-                    if u not in isActived and random.uniform(0.0, 1.0) < graph.edge_weight[u][seed]:
+                    if u not in isActived and random.random() <= graph.edge_weight[u][seed]:
                         isActived.add(u)
                         new_activity_set.add(u)
             activity_set = new_activity_set          
@@ -126,14 +124,6 @@ def sampling_LT(cnt):
         R.append(isActived)
     return R
 
-def log_binomial(n, k):
-    fraction = 0
-    for i in range(k + 1, n + 1):
-        fraction += math.log(i)
-    for i in range(1, n - k + 1):
-        fraction -= math.log(i)
-    # print(fraction)
-    return fraction
 
 def sampling(graph: Graph, k: int, epsilon, l, mode):
     R = list()
@@ -141,34 +131,25 @@ def sampling(graph: Graph, k: int, epsilon, l, mode):
     n = graph.vertices
     epsilon_prime = math.sqrt(2) * epsilon
     f = math.factorial
-    log_nk = math.log(f(n)//f(k)//f(n-k))
-    lambda_prime = ((2 + 2 * epsilon_prime / 3) * (
-            log_nk + l * math.log(n) + math.log(math.log2(n))) * n) / pow(epsilon_prime, 2)
+    lambda_prime = (2 + (2 / 3) * epsilon_prime) * (math.log(f(n) // f(k) // f(n-k)) + l * math.log(n) + math.log(math.log(n, 2))) * n / math.pow(epsilon_prime, 2)
     alpha = math.sqrt(l*math.log(n) + math.log(2))
-    beta = math.sqrt((1 - 1 / math.e)*(log_nk + l* math.log(n) + math.log(2)))
+    beta = math.sqrt((1 - 1 / math.e)*(math.log(f(n) // f(k) // f(n-k)) + l* math.log(n) + math.log(2)))
     lambda_star = 2 * n * math.pow(((1 - 1/math.e) * alpha + beta), 2) * math.pow(epsilon, -2)
 
-    for i in range(1, int(math.log2(n-1)) + 1):
+    for i in range(1, int(math.log(n, 2))):
         x = n / math.pow(2, i)
         theta = lambda_prime / x
-        # print(x, lambda_prime)
-        # print("theta: " + str(theta))
+        print("theta: " + str(theta))
         curtime = time.time()
         if mode == 'IC':
             res = sampling_IC(math.ceil(theta-len(R)))
         elif mode == 'LT':
             res = sampling_LT(math.ceil(theta-len(R)))
+        print("sampling phase time: " + str(time.time() - curtime))
         R += res
-        if i == 1:
-            for r in R:
-                print(r)
-
-        # print("sampling phase time: " + str(time.time() - curtime))
-
         # start = time.time()
         FR = node_selection(R, k)[0]
         # print(FR)
-
         # print('selection time:', time.time()-start)
     
         if n * FR >= (1 + epsilon_prime) * x:
@@ -192,20 +173,20 @@ def IMM(graph: Graph, k: int, epsilon, l, mode):
     S = node_selection(R, k)[1]
     return S
     
-# def ISE(S, model):
-#     print('''==================ISE TEST=================''')
-#     with open('IMP2018/seeds_out.txt', 'w') as fp:
-#         for s in S:
-#             fp.write('{s}\n'.format(s=s))
-#     if model == 'IC':
-#         os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m IC -t 60')
-#     elif model == 'LT':
-#         os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m LT -t 60')
+def ISE(S, model):
+    print('''==================ISE TEST=================''')
+    with open('IMP2018/seeds_out.txt', 'w') as fp:
+        for s in S:
+            fp.write('{s}\n'.format(s=s))
+    if model == 'IC':
+        os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m IC -t 60')
+    elif model == 'LT':
+        os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m LT -t 60')
 
 
 if __name__ == "__main__":
-    random.seed(1)
     curtime = time.time()
+    random.seed(1)
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', dest='social_network' ,help='the absolute path of the social network file')
     parser.add_argument('-k', dest='seed_size', help='predefined size of the seed set')
@@ -225,11 +206,11 @@ if __name__ == "__main__":
     model = parse_res.diffusion_model
     S = IMM(graph, k, epsilon, l, model)
 
-    # for s in S:
-    #     print(s)
+    for s in S:
+        print(s)
     
-    # print("elapsed time: ", time.time() - curtime)
-    # ISE(S, model)
+    print("elapsed time: ", time.time() - curtime)
+    ISE(S, model)
 
 
 
