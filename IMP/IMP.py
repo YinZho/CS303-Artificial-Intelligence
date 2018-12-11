@@ -140,12 +140,11 @@ def sampling(graph: Graph, k: int, epsilon, l, mode):
         x = n / math.pow(2, i)
         theta = lambda_prime / x
 
-        start = time.time()
         for i in range(worker_cnt):
             worker[i].inQ.put(math.ceil((theta-len(R))/worker_cnt))
         for i in range(worker_cnt):
             R += worker[i].outQ.get()
-        start = time.time()
+
         FR = node_selection(R, k)[0]
         if n * FR >= (1 + epsilon_prime) * x:
             LB = n * FR / (1 + epsilon_prime)
