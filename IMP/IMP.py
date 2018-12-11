@@ -1,20 +1,18 @@
 import os
+import sys
 import math
-import copy
 import time
 import heapq
 import random
 import argparse
-
+import numpy as np
 from collections import defaultdict
-from multiprocessing import Pool
+import multiprocessing as mp
 '''
 1. Node index starts from 1
 2. The first line contains the number of nodes n and number of edges m
 3. Each of the next m lines describes an edge following the format: <src> <dest> <weight>
 '''
-
-
 
 
 class Graph:
@@ -48,11 +46,11 @@ def read_social_network_graph(file_name):
                 u,v,w = line
                 adj_list[u].append(v)
                 adj_list_rev[v].append(u)
-                edge_weight[u][v] = w   
+                edge_weight[u][v] = w
+                
     return Graph(vertices, edges, adj_list, adj_list_rev, edge_weight)
 
-def node_selection(R: list, k: int):
-    S = set()
+def cnt_nodes(R: list):
     node_edges = dict()
     for i, RR in enumerate(R):
         for v in RR:
@@ -60,7 +58,11 @@ def node_selection(R: list, k: int):
                 node_edges[v].add(i)
             else:
                 node_edges[v] = {i}
+    return node_edges
 
+def node_selection(R: list, k: int):
+    S = set()
+    node_edges = cnt_nodes(R)
     max_heap = list()
     for key, value in node_edges.items():
         max_heap.append([-len(value), key, 0])
@@ -70,45 +72,46 @@ def node_selection(R: list, k: int):
     i = 0
     while i < k:
         val = heapq.heappop(max_heap)
-        if val[2] == i:
-            S.add(val[1])
-            i += 1
-            covered_set |= node_edges[val[1]]
-        else:
+        if val[2] != i:
             node_edges[val[1]] -= covered_set
             val[0] = - len(node_edges[val[1]])
             val[2] = i
             heapq.heappush(max_heap, val)
             
-    return len(covered_set) / len(R), S
+        else:
+            S.add(val[1])
+            i += 1
+            covered_set |= node_edges[val[1]]
+            
+    return [len(covered_set) / len(R), S]
 
 
 
-def get_rr_IC(cnt):
+def get_rr_IC(cnt, graph):
     R = list()
+    n = graph.vertices
     for _ in range(cnt):
         rand_v = random.randint(1, n)
         isActived = {rand_v}
         activity_set = {rand_v}
-    
-        while activity_set:
+        while len(activity_set) > 0:
             new_activity_set = set()
             for seed in activity_set:
                 for u in graph.adj_list_rev[seed]:
-                    if u not in isActived and random.uniform(0.0, 1.0) < graph.edge_weight[u][seed]:
-                        new_activity_set.add(u)
+                    if u not in isActived and random.uniform(0, 1) <= graph.edge_weight[u][seed]:
                         isActived.add(u)
-            activity_set = new_activity_set          
+                        new_activity_set.add(u)
+                activity_set = new_activity_set
         R.append(isActived)
     return R
 
-def get_rr_LT(cnt): 
+def get_rr_LT(cnt, graph): 
     R = list()
+    n = graph.vertices
     for _ in range(cnt):         
         rand_v = random.randint(1, n)
         curnode = rand_v
         isActived = {rand_v}
-
         while True:
             size = len(graph.adj_list_rev[curnode])
             if size == 0:
@@ -116,7 +119,6 @@ def get_rr_LT(cnt):
             op = random.randrange(0, size)
             if graph.adj_list_rev[curnode][op] in isActived:
                 break
-
             isActived.add(graph.adj_list_rev[curnode][op])
             curnode = graph.adj_list_rev[curnode][op]
         R.append(isActived)
@@ -129,39 +131,33 @@ def sampling(graph: Graph, k: int, epsilon, l, mode):
     n = graph.vertices
     epsilon_prime = math.sqrt(2) * epsilon
     f = math.factorial
-    comb_kb = math.log(f(n) // f(k) // f(n-k))
-    lambda_prime = (2 + (2 / 3) * epsilon_prime) * (comb_kb + l * math.log(n) + math.log(math.log(n, 2))) * n / math.pow(epsilon_prime, 2)
+    lambda_prime = (2 + (2 / 3) * epsilon_prime) * (math.log(f(n) // f(k) // f(n-k)) + l * math.log(n) + math.log(math.log(n, 2))) * n / math.pow(epsilon_prime, 2)
     alpha = math.sqrt(l*math.log(n) + math.log(2))
-    beta = math.sqrt((1 - 1 / math.e)*(comb_kb + l* math.log(n) + math.log(2)))
+    beta = math.sqrt((1 - 1 / math.e)*(math.log(f(n) // f(k) // f(n-k)) + l* math.log(n) + math.log(2)))
     lambda_star = 2 * n * math.pow(((1 - 1/math.e) * alpha + beta), 2) * math.pow(epsilon, -2)
 
     for i in range(1, int(math.log(n, 2))):
         x = n / math.pow(2, i)
         theta = lambda_prime / x
-        # print("theta: " + str(theta))
-        # curtime = time.time()
-        if mode == 'IC':
-            res = get_rr_IC(math.ceil(theta-len(R)))
-        elif mode == 'LT':
-            res = get_rr_LT(math.ceil(theta-len(R)))
-        # print("sampling phase time: " + str(time.time() - curtime))
-        R += res
-        # start = time.time()
+
+        start = time.time()
+        for i in range(worker_cnt):
+            worker[i].inQ.put(math.ceil((theta-len(R))/worker_cnt))
+        for i in range(worker_cnt):
+            R += worker[i].outQ.get()
+        start = time.time()
         FR = node_selection(R, k)[0]
-        # print(FR)
-        # print('selection time:', time.time()-start)
-    
         if n * FR >= (1 + epsilon_prime) * x:
             LB = n * FR / (1 + epsilon_prime)
             break
 
     theta = lambda_star / LB
 
-    if mode == 'IC':
-        res = get_rr_IC(math.ceil(theta-len(R)))
-    elif mode == 'LT':
-        res = get_rr_LT(math.ceil(theta-len(R)))
-    R += res
+    for i in range(worker_cnt):
+        worker[i].inQ.put(math.ceil((theta-len(R))/worker_cnt))
+    for i in range(worker_cnt):
+        R += worker[i].outQ.get()
+
     return R
         
 
@@ -172,15 +168,47 @@ def IMM(graph: Graph, k: int, epsilon, l, mode):
     S = node_selection(R, k)[1]
     return S
     
-# def ISE(S, model):
+# def ISE(S, model, fn):
 #     print('''==================ISE TEST=================''')
-#     with open('IMP2018/seeds_out.txt', 'w') as fp:
+#     fw = 'IMP2018/seeds_out.txt'
+#     with open(fw, 'w') as fp:
 #         for s in S:
 #             fp.write('{s}\n'.format(s=s))
 #     if model == 'IC':
-#         os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m IC -t 60')
+#         os.system('python ISE.py -i {} -s {} -m IC -t 60'.format(fn, fw))
 #     elif model == 'LT':
-#         os.system('python3 ISE.py -i IMP2018/NetHEPT1.txt -s IMP2018/seeds_out.txt -m LT -t 60')
+#         os.system('python ISE.py -i {} -s {} -m LT -t 60'.format(fn, fw))
+
+'''=============================================='''
+class Worker(mp.Process):
+    def __init__ (self, inQ, outQ, mode, graph):
+        super(Worker, self).__init__(target=self.start)
+        self.inQ = inQ
+        self.outQ = outQ
+        self.mode = mode
+        self.graph = graph
+        np.random.seed(random.randrange(1, 100))
+
+    def run (self):
+        while True:
+            task = self.inQ.get()
+            cnt = task     # 解析任务
+            if self.mode == 'IC':
+                res = get_rr_IC(cnt, self.graph)   # 执行任务
+            else:
+                res = get_rr_LT(cnt, self.graph)
+            self.outQ.put(res)  # 返回结果
+
+def create_worker (num, mode):
+    for i in range(num):
+        worker.append(Worker(mp.Queue(), mp.Queue(), mode, graph))
+        worker[i].start()
+
+def finish_worker ():
+    for w in worker:
+        w.terminate()
+
+'''=============================================='''
 
 
 if __name__ == "__main__":
@@ -192,24 +220,34 @@ if __name__ == "__main__":
     parser.add_argument('-t', dest='time_budget', help='the seconds that my algorithm can spend on this instance')
     parse_res = parser.parse_args()
 
-    global graph
     graph = read_social_network_graph(parse_res.social_network)
 
-    global n
-    n = graph.vertices
-
+    global worker_cnt
+    worker_cnt = 8
+        
+    global worker
+    worker = []
+    create_worker(worker_cnt, parse_res.diffusion_model)
     k = int(parse_res.seed_size)
     epsilon = 0.1
+
+    if graph.edges > 80000 and parse_res.time_budget <= 60:
+        epsilon = 0.2
+        if parse_res.time_budget <= 30:
+            epsilon = 0.5
+    
+
     l = 1
     model = parse_res.diffusion_model
     S = IMM(graph, k, epsilon, l, model)
-    # for i in range(100):
-    #     print(get_rr_IC(1))
 
     for s in S:
         print(s)
+    # ISE(S, parse_res.diffusion_model, parse_res.social_network)
+    finish_worker()
+    sys.stdout.flush()
+    os._exit(0)
+
+
+
     
-    # print("elapsed time: ", time.time() - curtime)
-    # ISE(S, model)
-
-

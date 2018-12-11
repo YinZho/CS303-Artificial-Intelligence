@@ -66,8 +66,6 @@ def LT_model(time_budget):
         activity_set = seed_set
         thresholds = [0 for i in range(graph.vertices+1)]
         isActive = set()
-
-        # initialize threshold
         for i in range(len(thresholds)):          
             if i == 0:
                 thresholds[i] = math.inf
@@ -76,10 +74,7 @@ def LT_model(time_budget):
                 thresholds[i] = rand_num
                 if rand_num == 0:
                     activity_set.append(i)
-
-        count = len(activity_set)   
-
-        # initialize isActive      
+        count = len(activity_set)         
         for e in activity_set:
             isActive.add(e)             
         while activity_set:
