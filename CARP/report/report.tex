@@ -1,0 +1,796 @@
+\documentclass[conference,compsoc]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+\newcolumntype{C}[1]{>{\Centering}m{#1}}
+\renewcommand\tabularxcolumn[1]{C{#1}}
+% *** CITATION PACKAGES ***
+%
+\ifCLASSOPTIONcompsoc
+  % IEEE Computer Society needs nocompress option
+  % requires cite.sty v4.0 or later (November 2003)
+  \usepackage[nocompress]{cite}
+\else
+  % normal IEEE
+  \usepackage{cite}
+\fi
+% cite.sty was written by Donald Arseneau
+% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
+% \cite{} output to follow that of the IEEE. Loading the cite package will
+% result in citation numbers being automatically sorted and properly
+% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
+% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
+% \cite will automatically add leading space, if needed. Use cite.sty's
+% noadjust option (cite.sty V3.8 and later) if you want to turn this off
+% such as if a citation ever needs to be enclosed in parenthesis.
+% cite.sty is already installed on most LaTeX systems. Be sure and use
+% version 5.0 (2009-03-20) and later if using hyperref.sty.
+% The latest version can be obtained at:
+% http://www.ctan.org/pkg/cite
+% The documentation is contained in the cite.sty file itself.
+%
+% Note that some packages require special options to format as the Computer
+% Society requires. In particular, Computer Society  papers do not use
+% compressed citation ranges as is done in typical IEEE papers
+% (e.g., [1]-[4]). Instead, they list every citation separately in order
+% (e.g., [1], [2], [3], [4]). To get the latter we need to load the cite
+% package with the nocompress option which is supported by cite.sty v4.0
+% and later.
+
+
+
+
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+\ifCLASSINFOpdf
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+% graphicx was written by David Carlisle and Sebastian Rahtz. It is
+% required if you want graphics, photos, etc. graphicx.sty is already
+% installed on most LaTeX systems. The latest version and documentation
+% can be obtained at: 
+% http://www.ctan.org/pkg/graphicx
+% Another good source of documentation is "Using Imported Graphics in
+% LaTeX2e" by Keith Reckdahl which can be found at:
+% http://www.ctan.org/pkg/epslatex
+%
+% latex, and pdflatex in dvi mode, support graphics in encapsulated
+% postscript (.eps) format. pdflatex in pdf mode supports graphics
+% in .pdf, .jpeg, .png and .mps (metapost) formats. Users should ensure
+% that all non-photo figures use a vector format (.eps, .pdf, .mps) and
+% not a bitmapped formats (.jpeg, .png). The IEEE frowns on bitmapped formats
+% which can result in "jaggedy"/blurry rendering of lines and letters as
+% well as large increases in file sizes.
+%
+% You can find documentation about the pdfTeX application at:
+% http://www.tug.org/applications/pdftex
+
+
+
+
+
+% *** MATH PACKAGES ***
+%
+\usepackage{amsmath}
+% A popular package from the American Mathematical Society that provides
+% many useful and powerful commands for dealing with mathematics.
+%
+% Note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+%\interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/pkg/amsmath
+
+
+
+
+
+% *** SPECIALIZED LIST PACKAGES ***
+%
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{float}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+% algorithmic.sty was written by Peter Williams and Rogerio Brito.
+% This package provides an algorithmic environment fo describing algorithms.
+% You can use the algorithmic environment in-text or within a figure
+% environment to provide for a floating algorithm. Do NOT use the algorithm
+% floating environment provided by algorithm.sty (by the same authors) or
+% algorithm2e.sty (by Christophe Fiorio) as the IEEE does not use dedicated
+% algorithm float types and packages that provide these will not provide
+% correct IEEE style captions. The latest version and documentation of
+% algorithmic.sty can be obtained at:
+% http://www.ctan.org/pkg/algorithms
+% Also of interest may be the (relatively newer and more customizable)
+% algorithmicx.sty package by Szasz Janos:
+% http://www.ctan.org/pkg/algorithmicx
+
+
+\usepackage[T1]{fontenc} 
+\usepackage[utf8]{inputenc}
+
+
+
+
+% *** ALIGNMENT PACKAGES ***
+%
+\usepackage{array}
+% Frank Mittelbach's and David Carlisle's .sty patches and improves
+% the standard LaTeX2e array and tabular environments to provide better
+% appearance and additional user controls. As the default LaTeX2e table
+% generation code is lacking to the point of almost being broken with
+% respect to the quality of the end results, all users are strongly
+% advised to use an enhanced (at the very least that provided by array.sty)
+% set of table tools. array.sty is already installed on most systems. The
+% latest version and documentation can be obtained at:
+% http://www.ctan.org/pkg/array
+
+
+% IEEEtran contains the IEEEeqnarray family of commands that can be used to
+% generate multiline equations as well as matrices, tables, etc., of high
+% quality.
+
+
+
+
+% *** SUBFIGURE PACKAGES ***
+%\ifCLASSOPTIONcompsoc
+%  \usepackage[caption=false,font=footnotesize,labelfont=sf,textfont=sf]{subfig}
+%\else
+%  \usepackage[caption=false,font=footnotesize]{subfig}
+%\fi
+% subfig.sty, written by Steven Douglas Cochran, is the modern replacement
+% for subfigure.sty, the latter of which is no longer maintained and is
+% incompatible with some LaTeX packages including fixltx2e. However,
+% subfig.sty requires and automatically loads Axel Sommerfeldt's caption.sty
+% which will override IEEEtran.cls' handling of captions and this will result
+% in non-IEEE style figure/table captions. To prevent this problem, be sure
+% and invoke subfig.sty's "caption=false" package option (available since
+% subfig.sty version 1.3, 2005/06/28) as this is will preserve IEEEtran.cls
+% handling of captions.
+% Note that the Computer Society format requires a sans serif font rather
+% than the serif font used in traditional IEEE formatting and thus the need
+% to invoke different subfig.sty package options depending on whether
+% compsoc mode has been enabled.
+%
+% The latest version and documentation of subfig.sty can be obtained at:
+% http://www.ctan.org/pkg/subfig
+
+
+
+
+% *** FLOAT PACKAGES ***
+%
+%\usepackage{fixltx2e}
+% fixltx2e, the successor to the earlier fix2col.sty, was written by
+% Frank Mittelbach and David Carlisle. This package corrects a few problems
+% in the LaTeX2e kernel, the most notable of which is that in current
+% LaTeX2e releases, the ordering of single and double column floats is not
+% guaranteed to be preserved. Thus, an unpatched LaTeX2e can allow a
+% single column figure to be placed prior to an earlier double column
+% figure.
+% Be aware that LaTeX2e kernels dated 2015 and later have fixltx2e.sty's
+% corrections already built into the system in which case a warning will
+% be issued if an attempt is made to load fixltx2e.sty as it is no longer
+% needed.
+% The latest version and documentation can be found at:
+% http://www.ctan.org/pkg/fixltx2e
+
+
+%\usepackage{stfloats}
+% stfloats.sty was written by Sigitas Tolusis. This package gives LaTeX2e
+% the ability to do double column floats at the bottom of the page as well
+% as the top. (e.g., "\begin{figure*}[!b]" is not normally possible in
+% LaTeX2e). It also provides a command:
+%\fnbelowfloat
+% to enable the placement of footnotes below bottom floats (the standard
+% LaTeX2e kernel puts them above bottom floats). This is an invasive package
+% which rewrites many portions of the LaTeX2e float routines. It may not work
+% with other packages that modify the LaTeX2e float routines. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/pkg/stfloats
+% Do not use the stfloats baselinefloat ability as the IEEE does not allow
+% \baselineskip to stretch. Authors submitting work to the IEEE should note
+% that the IEEE rarely uses double column equations and that authors should try
+% to avoid such use. Do not be tempted to use the cuted.sty or midfloat.sty
+% packages (also by Sigitas Tolusis) as the IEEE does not format its papers in
+% such ways.
+% Do not attempt to use stfloats with fixltx2e as they are incompatible.
+% Instead, use Morten Hogholm'a dblfloatfix which combines the features
+% of both fixltx2e and stfloats:
+%
+% \usepackage{dblfloatfix}
+% The latest version can be found at:
+% http://www.ctan.org/pkg/dblfloatfix
+
+
+
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+%
+\usepackage{url}
+% url.sty was written by Donald Arseneau. It provides better support for
+% handling and breaking URLs. url.sty is already installed on most LaTeX
+% systems. The latest version and documentation can be obtained at:
+% http://www.ctan.org/pkg/url
+% Basically, \url{my_url_here}.
+
+
+
+
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+% *** Do not use packages that alter fonts (such as pslatex).         ***
+% There should be no need to do such things with IEEEtran.cls V1.6 and later.
+% (Unless specifically asked to do so by the journal or conference you plan
+% to submit to, of course. )
+
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+%
+% paper title
+% Titles are generally capitalized except for words such as a, an, and, as,
+% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually
+% not capitalized unless they are the first or last word of the title.
+% Linebreaks \\ can be used within to get better formatting as desired.
+% Do not put math or special symbols in the title.
+\title{Tabu search algorithm for the capacitated arc routing problem}
+
+
+% author names and affiliations
+% use a multiple column layout for up to three different
+% affiliations
+\author{\IEEEauthorblockN{YingZhou  11610701}
+\IEEEauthorblockA{Computer Science and Engineering\\
+SUSTech\\
+11610701@mail.sustc.edu.cn}}
+
+
+% conference papers do not typically use \thanks and this command
+% is locked out in conference mode. If really needed, such as for
+% the acknowledgment of grants, issue a \IEEEoverridecommandlockouts
+% after \documentclass
+
+% for over three affiliations, or if they all won't fit within the width
+% of the page (and note that there is less available width in this regard for
+% compsoc conferences compared to traditional conferences), use this
+% alternative format:
+% 
+%\author{\IEEEauthorblockN{Michael Shell\IEEEauthorrefmark{1},
+%Homer Simpson\IEEEauthorrefmark{2},
+%James Kirk\IEEEauthorrefmark{3}, 
+%Montgomery Scott\IEEEauthorrefmark{3} and
+%Eldon Tyrell\IEEEauthorrefmark{4}}
+%\IEEEauthorblockA{\IEEEauthorrefmark{1}School of Electrical and Computer Engineering\\
+%Georgia Institute of Technology,
+%Atlanta, Georgia 30332--0250\\ Email: see http://www.michaelshell.org/contact.html}
+%\IEEEauthorblockA{\IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA\\
+%Email: homer@thesimpsons.com}
+%\IEEEauthorblockA{\IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391\\
+%Telephone: (800) 555--1212, Fax: (888) 555--1212}
+%\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
+
+
+
+
+% use for special paper notices
+%\IEEEspecialpapernotice{(Invited Paper)}
+
+
+
+
+% make the title area
+\maketitle
+
+% As a general rule, do not put math, special symbols or citations
+% in the abstract
+%\begin{abstract}
+
+%\end{abstract}
+
+% no keywords
+
+
+
+
+% For peer review papers, you can put extra information on the cover
+% page as needed:
+% \ifCLASSOPTIONpeerreview
+% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
+% \fi
+%
+% For peerreview papers, this IEEEtran command inserts a page break and
+% creates the second title. It will be ignored for other modes.
+\IEEEpeerreviewmaketitle
+
+
+
+\section{Preliminaries}
+The Capacitated Arc Routing Problem (CARP) is normally defined on an undirected connected graph $G = (V, E)$. The set $V$ of $n$ nodes contains one depot (node 1). The set $E$ of $m$ edges includes a subset $E_R$ of $t$ required edges (or tasks), need to be seviced by a vehicle. Each edge $e$ in $E$ has a traversal cost $c_e$. A nonnegative demand $q_e$ is associated with each task. The goal is to find a minimum cost set of routes to complete all tasks, the number of routes being a decision variable. In a route, some of these edges are serviced, while there exists deadheading edges are traversed but not services. The total service demand of a route by a vehicle is limited to $Q$.\cite{Eiselt} The CARP has significant application in urban refuse collection,postal deliveries, snow clearance, etc.\cite{Brandao} 
+
+
+
+
+
+% An example of a floating figure using the graphicx package.
+% Note that \label must occur AFTER (or within) \caption.
+% For figures, \caption should occur after the \includegraphics.
+% Note that IEEEtran v1.7 and later has special internal code that
+% is designed to preserve the operation of \label within \caption
+% even when the captionsoff option is in effect. However, because
+% of issues like this, it may be the safest practice to put all your
+% \label just after \caption rather than within \caption{}.
+%
+% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
+% option should be used if it is desired that the figures are to be
+% displayed while in draft mode.
+%
+%\begin{figure}[!t]
+%\centering
+%\includegraphics[width=2.5in]{myfigure}
+% where an .eps filename suffix will be assumed under latex, 
+% and a .pdf suffix will be assumed for pdflatex; or what has been declared
+% via \DeclareGraphicsExtensions.
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure}
+
+% Note that the IEEE typically puts floats only at the top, even when this
+% results in a large percentage of a column being occupied by floats.
+
+
+% An example of a double column floating figure using two subfigures.
+% (The subfig.sty package must be loaded for this to work.)
+% The subfigure \label commands are set within each subfloat command,
+% and the \label for the overall figure must come after \caption.
+% \hfil is used as a separator to get equal spacing.
+% Watch out that the combined width of all the subfigures on a 
+% line do not exceed the text width or a line break will occur.
+%
+%\begin{figure*}[!t]
+%\centering
+%\subfloat[Case I]{\includegraphics[width=2.5in]{box}%
+%\label{fig_first_case}}
+%\hfil
+%\subfloat[Case II]{\includegraphics[width=2.5in]{box}%
+%\label{fig_second_case}}
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure*}
+%
+% Note that often IEEE papers with subfigures do not employ subfigure
+% captions (using the optional argument to \subfloat[]), but instead will
+% reference/describe all of them (a), (b), etc., within the main caption.
+% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure
+% labels, the optional argument to \subfloat must be present. If a
+% subcaption is not desired, just leave its contents blank,
+% e.g., \subfloat[].
+
+
+% An example of a floating table. Note that, for IEEE style tables, the
+% \caption command should come BEFORE the table and, given that table
+% captions serve much like titles, are usually capitalized except for words
+% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to
+% and up, which are usually not capitalized unless they are the first or
+% last word of the caption. Table text will default to \footnotesize as
+% the IEEE normally uses this smaller font for tables.
+% The \label must come after \caption as always.
+%
+%\begin{table}[!t]
+%% increase table row spacing, adjust to taste
+%\renewcommand{\arraystretch}{1.3}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+%\caption{An Example of a Table}
+%\label{table_example}
+%\centering
+%% Some packages, such as MDW tools, offer better commands for making tables
+%% than the plain LaTeX2e tabular which is used here.
+%\begin{tabular}{|c||c|}
+%\hline
+%One & Two\\
+%\hline
+%Three & Four\\
+%\hline
+%\end{tabular}
+%\end{table}
+
+
+% Note that the IEEE does not put floats in the very first column
+% - or typically anywhere on the first page for that matter. Also,
+% in-text middle ("here") positioning is typically not used, but it
+% is allowed and encouraged for Computer Society conferences (but
+% not Computer Society journals). Most IEEE journals/conferences use
+% top floats exclusively. 
+% Note that, LaTeX2e, unlike IEEE journals/conferences, places
+% footnotes above bottom floats. This can be corrected via the
+% \fnbelowfloat command of the stfloats package.
+
+
+
+\section{Methodology}
+
+\subsection{Representation}
+There are four code files including \textit{CARP\_solver.py},  \textit{Graph.py}, \textit{RandomPS.py} and \textit{Tabu\_Search.py} in CARP project. 
+
+\begin{itemize}
+	\item CARP\_solver.py
+	\begin{itemize}
+		\item name: the CARP problem set name
+		\item vertices: the number of vertices $V$ in Graph
+		\item depot: the vertex of vehicles start and finish 
+		\item required\_edges: the number of required edges
+		\item capacity: the limit capacity of a vehicle 
+		\item graph: a data structure built by problem set
+	\end{itemize}
+	\item Graph.py
+	\begin{itemize}
+		\item vertices: the number of vertices $V$ in Graph
+		\item adj\_list: a collection of lists represents graph
+		\item adj\_matrix: a matrix represents graph
+		\item mul\_sp: a matrix represents shortest path between any two vertices in graph
+	\end{itemize}
+	\item RandomPS.py
+	\begin{itemize}
+		\item carp: a CARP object storages information of CARP problem 
+	\end{itemize}
+	\item Tabu\_Search.py
+	\begin{itemize}
+		\item S: initialized with initial solution, representing the current solution for iteration
+		\item S\_BF: it used to record the best feasible solution during iteration
+		\item N: the number of required edges
+		\item P: the penalty term in objective function
+		\item graph: a data structure built by problem set
+		\item tabu\_list: a list used to ban searched solution for a tenure time
+	\end{itemize}
+	
+\end{itemize}
+
+\subsection{Data Structure}
+\begin{itemize}
+	\item CARP\_solver.py
+	\begin{itemize}
+		\item dictionary
+		\item NumPy array		
+	\end{itemize}
+	\item Graph.py
+	\begin{itemize}	
+		\item graph
+		\item heap
+		\item list
+		\item NumPy array		
+	\end{itemize}
+	\item RandomPS.py
+	\begin{itemize}
+		\item list
+		\item NumPy array
+	\end{itemize}
+	\item Tabu\_Search.py
+	\begin{itemize}
+		\item dictionary
+		\item list
+	\end{itemize}
+\end{itemize}
+
+
+\subsection{Model Design}
+According to the comparison of different algorithms in the \textit{Arc routing}, TSA has a good performance in considering the quality of the solution and the speed of searching.\cite{Eiselt}. 
+\par After several attemps, I decided the structure as follows:\\
+ Random path scanning (PS) method is used to obtain initial solutions proposed by Pearn \cite{Pearn}, then an optimized tabu seach algorithm (TSA) based on \cite{Brandao} is implemented for imporving initial solution. Both two parts are seperately using eight processes at the same time to get the best solution.
+
+
+\subsection{Detail of Algorithm}
+\subsubsection{Random Path Scanning}
+The \textit{Random Path Scanning} (PS) was proposed by Pearn \cite{Pearn}. He modified \textit{Path Scanning} by selecting one of five criteria at random to use when several requied edges are incident. Throwing away five criteria, I randomly pick one edge when more than one requied edges are incident in the experiment. However, I surprisingly found that it outperforms selecting criteria. The method is explained as follows.
+
+\begin{algorithm}[H]
+	\caption{Random Path Scanning}
+	\begin{algorithmic}[1]
+		\Function{random\_path\_scanning}{}
+			\State $k = 0$ \Comment the index of route
+			\State copy all required arcs in a list
+			 \textit{free}
+			\Comment include both directions of an arc
+			\Repeat
+				\State $R_k \gets \emptyset ; load(k), cost{k} \gets 0; i \gets 1$
+				\Repeat
+				\State $\bar{d} \gets \infty$
+				\For{each $ $u$ \in free$}
+					\If{$d_{i,beg(u)} < \bar{d}$}
+					\State $\bar{d} \gets d_{i,beg(u)}$
+					\State $\bar{u} \gets u$
+					\ElsIf{$(d_{i,beg(u)} = \bar{d})$}
+						\If{$random.randint(0, 1) = 1$}
+						\State $\bar{u} = u$
+						\EndIf
+					\EndIf
+				\EndFor
+				\State add $\bar{u}$ at the end of route ${R_k}$
+				\State remove arc $\bar{u}$ from \textit{free}
+				\State remove reverse $\bar{u}$ from \textit{free}
+				\State $load[k] = load[k] + q_{\bar{u}}$
+				\State $cost[k] = cost[k] + \bar{d} + c_{\bar{u}}$
+				\State $ i = end(\bar{u})$
+				\Until{$\bar{d} = \infty$ or $load(k) + q_u > Q$}
+				\State $cost(k) \gets cost(k) + d_{i1}$ 
+				\State $k \gets k + 1$
+			\Until{$free = \emptyset$}
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+The loop (6-24) builds successive routes $R_k$. When searching for next arc, if the demand of the nearest required service in \textit{free} exceeds the capacity Q that the vehicle can load, the vehicle will back to depot directly, which means a vehicle in a route will not as full as possible. The lines(13-14) means when traversing a minimum edge is incident, it will randomly be selected or discarded.
+\subsubsection{Heuristic Tabu Search}
+\begin{enumerate}
+	\item \textbf{Neighbourhood moves}\\
+	the TSA is based on three types of neighbourhood move consisting of \textit{Single Insertion}, \textit{Double Insertion} and \textit{Swap}. I add one more type called \textit{Merge Split}.
+	\begin{enumerate}
+		\item \textit{Single Insertion}\\
+		In a single insertion move, an edge from a route is removed from its current route and a insertion is made in any other route between any two serviced edges no mather they are adjacent or not, including the beginning and end of the route connecting with depot. The trail insertion considers both directions for the edge inserted in the new route.
+		\item \textit{Double Insertion}\\
+		In a double insertion move, the operation is similar except that a candidate consists of two connected requeired edges in one route no mather whether there is a deadheading path between two connected edges in a route.
+		\item \textit{Swap}\\
+		In a swap operation, swapping any two edges from any two different routes.
+		\item \textit{Merge Split}\\
+		The merge split move is picking any two routes and using random path scanning to build another completely new routes set, which substitude the original two routes. 
+		
+	\end{enumerate}
+	\item \textbf{Objective function}\\
+	  The objective function to be minimised by the TSA, and it is described as follows:\\
+	  \\
+	  for a successive route i:
+	  \begin{align*}
+	  f(i) = cost(i) + P * w(i) \\
+	  w(i) = max(x(i)-1, 0)
+	  \end{align*}
+	  for a CARP problem solution:
+	  \begin{align*}
+	  F = max(f(i)) \forall i \in routes
+	  \end{align*}
+	
+	The parameter P is set 1 initially, and is then halfed if all solutions are feasible for 5 consecutive iteration; it is doubled if all solutions are infeasible for 5 consecutive iteration. Since time limition of this project, the solution gets far awy is not affordable, so the parameter P will be set to 2 if P exceeds 64 and current solution will be set to best feasible solution for the current record.
+	
+	\item \textbf{Tabu list}\\
+	\textit{Tabu list}, a set of solution or any else that be banned and seen as inaddmissible moves as neighbour. It can avoid falling into local optimum on finding global optimal iterations. In this project, I put the cost of searched optimal neighbors in the tabu list for two reasons: The probability of more than one solutions identical costs can be ignored; recording a set of banned solution is memory costing and it is time consuming when judging a solution is banned or not.
+	
+	\begin{algorithm}
+		\caption{Tabu\_solver}
+		\begin{algorithmic}[1]
+			\Function{run}{{time\_limit}}
+			\State Set starting time, $t = time.time()$
+			\State Set iteration counter, $k = 0$
+			\State Set current solution S to be an initial solution and let $f(S)$ to be the objective function value of $S$
+			\State Set the best feasible solition $S_{BF} = S$ and let $f(S_{BF}) = f(S)$ 
+			\State Set number of consecutive iterations that solution is feasivle, $k_F = 0$
+			\State Set number of consecutive iterations that solution is infeasible, $k_I = 0$
+			\State Set tabu tenure, $t = N / 2$, N is the number of required edges
+			\State Set penalty parameter, $P = 1$
+			\State Empty \textit{tabu\_list}	
+			\Repeat
+			\State Update tabu list and remove expired solutions
+			\State Find neighbourhood move $S\prime$ from $S$, set $f(S\prime) = \infty$
+			\For{each neighbourhood move $s$ $\notin$ \textit{tabu\_list}}
+			\If{$f(s) < f(S\prime)$} $S\prime = s$ and $f(S\prime) = f(s)$ 
+			\EndIf
+			\If{$s$ is feasible and $f(s) < f(S_{BF})$} $S_{BF} = s$ and $f(S_{BF}) = f(s)$
+			\EndIf	
+			\EndFor
+			\State Set $S = S\prime$ and $f(S) = f(S\prime)$
+			\State add $S\prime$ to \textit{tabu\_list}
+			\State $k = k + 1$
+			\If{$S\prime$ is feasible} $k_F = k_F + 1$
+			\Else\;$k_I = k_I + 1$
+			\EndIf
+			\If{$k_F = 5$} $P = P / 2$
+			\EndIf
+			\If{$k_I = 5$} $P = P * 2$
+			\EndIf
+			\If{$k_F = 5$ or $k_I = 5$} $k_F = 0$ and $k_I = 0$
+			\EndIf
+			\Until{$time.time() - t > time\_limit - 1$}
+		\EndFunction			
+		\end{algorithmic}
+	\end{algorithm}
+\end{enumerate}
+\section{Empirical Verification}
+
+\subsection{Dataset}
+\begin{itemize}
+	\item \textit{gdb} instances from Golden et at. (1983)
+	\par The 23 \textit{gdb} instances have 7 to 27 nodes and 11 to 55 edges without no required edge, but do not use instances 8 and 9 due to inconsistencies graph.
+	\item \textit{val} instances from Benavent et al. (1992)
+	\par The 34 \textit{val} instances include 24 to 50 nodes and 34 to 97 edges without no required edge.
+	\item \textit{egl} instances from Li (1992) and Li and Eglese (1996)
+	\par The 24 larger \textit{egl} instances have 77 to 140 nodes and 98 to 190 edges with 51 to 190 required edges.
+\end{itemize}
+
+\subsection{Hyperparameters}
+\par All the random seed is set by int(time.time()).
+\par In this section, I first evaluate \textit{Random Path Scanning} by comparing randomly picking edge or selecting criteria when multiple minimum edges are incident. Because in larger data set \textit{egl-e-A},  it dose not exceed 0.01 s to run one time \textit{Random Path Scanning}, so I measure the performance separately in 1s, 5s and 10s to make sure there is enough time for both of them to demonstrate effectiveness. 
+\par Secondly, \textit{Randomly Path Scanning} with randomly picking edge as my initial solution, time setting depends on the size of data sets. For example, the smaller data sets \textit{gdb} and \textit{val} are set to 0.01s, 0.1s and 1s; and the larger instance are set to 0.1s, 1s and 5s. Since the randomness of \textit{Random Path Scanning}, I run code in each test case with different time setting 10 times and record the average and maximum of the costs.
+\par Finally, I measure the overall performance of the project under the setting below: due to the randomness of initial solution, I implemented code in each instance with different time setting five times to get the maximum and minimum costs compared with the optimal solution. Similarly, time setting depends on the size of data set. In specific, the smaller test cases \textit{gdb} and \textit{val} are set to 30s and 60s, while \textit{egl} are set to 60s ans 120s.
+
+
+\subsection{Performance Measure}
+\par The performances are measured with fixed time. The closer to the optimal solution, the better performance. Test environment as follow:
+The code is written in Python, compiled using Python 3.6.5 :: Anaconda. Only NumPy package is extra imported. Ubuntu 18.04.1,   
+16 processors, each processor with 2 threads, 32G RAM,  Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz.
+\subsection{Experimental Result}
+\begin{minipage}{\linewidth}
+	\centering	
+	\captionof{table}{Random Path Scanning in egl-e1-A instance} \label{tab:title} 	
+	\begin{tabular}{ C{1in} C{0.4in} *4{C{0.4in}}}\toprule[0.4pt]
+		\bf Randomly Pick & \bf 1s  & \bf 5s & \bf 10s \\\midrule
+		criteria(avg)    & 3921.00     & 3888.00     &  3850.00 \\
+		edge(avg)        & 3741.20     & 3722.30     &  3717.05 \\
+		\bottomrule[1.25pt]
+		\end {tabular}\par
+		\bigskip
+		\centering{}
+		
+\end{minipage}
+
+
+\begin{minipage}{\linewidth}
+	\centering	
+	\captionof{table}{The performance of RPS in multiple instances} \label{tab:title} 	
+	\begin{tabular}{ C{0.6in} C{0.4in} *4{C{0.4in}}}\toprule[0.4pt]
+		\bf File          & \bf $Cost_{avg}$  & \bf $Cost_{max}$ & \bf Opt & \bf time \\\midrule
+						  & 329               & 324.9            &         & 0.01s    \\
+				          & 319               & 316.3            &         & 0.1s     \\
+		\textit{gdb1}     & \bf 316           & \bf 316          & 316     & 1s       \\
+		\bottomrule[0.25pt]
+						  & 369               & 359.6            &         & 0.01s    \\
+						  & 358               & 352.4            &         & 0.1s     \\
+		\textit{gdb2}	  & 349               & 345.8            & 339     & 1s       \\
+		\bottomrule[0.25pt]
+						  & 297               & 287.4            &         & 0.01s    \\
+						  & 281 		      & 279.6            &         & 0.1s     \\
+		\textit{gdb3}	  & \bf 275           & \bf 275          & 275     & 1s       \\   
+		\bottomrule[0.25pt]
+						  & 185        		  & 181.2			 &         & 0.01s    \\
+						  & 179               & 175.2            &         & 0.1s     \\
+		\textit{val1a}	  & \bf 173           & \bf 173          & 173     & 1s       \\
+		\bottomrule[0.25pt]	
+						  & 196               & 192.9            &         & 0.01s    \\
+						  & 189               & 186.9            &         & 0.1s     \\
+		\textit{val1b}	  & 184			      & 181.3            & 173     & 1 s      \\
+		\bottomrule[0.25pt]
+						  & 276               & 271.7            &         & 0.01s    \\
+						  & 270               & 263.2            &         & 0.1s     \\
+		\textit{val1c}    & 260               & 255.9            & 245     & 1s       \\ 
+		\bottomrule[0.25pt]
+						  & 3877              & 3801.7           &         & 0.1s     \\
+						  & 3754              & 3732.6           &         & 1s       \\
+		\textit{egl-e1-A} & 3724              & 3721.3           & 3548    & 5s       \\
+		\bottomrule[0.25pt]
+						  & 4759              & 4696.4           &         & 0.01s    \\
+						  & 4695              & 4645.0           &         & 1s       \\
+		\textit{egl-e1-B} & 4618              & 4604.1           & 4498    & 5s       \\
+		\bottomrule[0.25pt]					
+					      & 5736            & 5656.0           &         & 0.01s    \\
+		& 5562            & 5501.5           &	     & 1s       \\
+		\textit{egl-s1-A} & 5491            & 5451.6           & 5018    & 5s       \\ 
+		\bottomrule[0.25pt]
+		\end {tabular}\par
+		\bigskip
+		\centering{}
+		
+\end{minipage}
+
+
+\begin{minipage}{\linewidth}
+	\centering	
+	\captionof{table}{The performance of RPS + TSA} \label{tab:title} 	
+	\begin{tabular}{ C{0.6in} C{0.4in} *4{C{0.4in}}}\toprule[0.4pt]
+	    \bf File          & \bf $Cost_{max}$  & \bf $Cost_{min}$ & \bf Opt & \bf time \\\midrule
+						  & 345               & \bf 339          &         & 30s      \\
+		\textit{gdb2}     & \bf 339           & \bf 339          & 339     & 60s      \\ 
+	    \bottomrule[0.25pt]
+						  & 179               & \bf 173          &         & 30s      \\
+		\textit{val1b}    & 179               & \bf 173          & 173     & 60s      \\
+		\bottomrule[0.25pt]
+					      & 254               & 247              &         & 30s      \\
+		\textit{val1c}    & 254               & 247              & 245	   & 60s      \\			  
+		\bottomrule[0.25pt]
+						  & 3612              & 3564             &         & 60s      \\
+		\textit{egl-e1-A} & 3612              & 3568             & 3548    & 120s     \\
+		\bottomrule[0.25pt]
+						  & 4567              & 4567             &         & 60s      \\
+		\textit{egl-e1-B} & 4567              & 4553             & 4498    & 120s     \\
+		\bottomrule[0.25pt]
+						  & 5315              & 5151             &         & 60s      \\
+		\textit{egl-s1-A} & 5209              & 5135             & 5048    & 120s     \\ 
+		\bottomrule[0.25pt]
+		\end {tabular}\par
+		\bigskip
+		
+		\centering{}
+		
+	\end{minipage}
+
+\bigbreak
+
+\par 
+
+
+
+
+
+
+\subsection{Conclusion}
+% use section* for acknowledgment
+
+
+\par As table 1 shows, randomly picking edge when there are multiple edges are incidents obviously better than randomly picking criteria under 20 independent repeat tests with same random seed in \textit{egl-e1-A} instance in 1 second, 5 seconds, 10 seconds respectively. In the case of eight processes running at the same time, the lowest cost is selected. Running a randomly picking criteria algorithm costs 0.00732s, while running a randomly picking edge algorithm costs 0.00427s under 160 independent repeat tests.
+\par Table 2 displays the performance of \textit{Random Path Scanning} in different data sets. In smallest dataset \textit{gdb}, it approximately obtains the optimal solution in 1s. As nodes and edges increase, the combination of edges are also increased. Therefore, it is hard to get closer to the optimal solution by greedy algorithm for nearest task. The costs of RPS solution are from 10 to several hundred more than optimal solutions from \textit{val} to \textit{egl}.
+\par According to table 3, it mainly measures the performance of \textit{Random Path Scanning} algorithm with \textit{Tabu Search} algorithm. Since finding solution neighbors by four operations totally cost about 1s depending on the size of instances, it can calculate the number of iteration by time. In small data set, 30s is enough to get a solution that is close to the optimal solution to no more than 5. Even though TSA significantly improves the initial solution, it is still about 100 more than the optimal solution. It slightly worse than \textit{deterministic tabu search}, mainly because I do not have enough time to implement Frederickson's heuristic method. However, adding a \textit{Merge Split} operation which increases the variability of neighbor solutions improves the performance of code through experiment.
+\par TSA is one of the fastest mataheuristics since its neighbor operations are simple. But it seems that its performance deeply depends on neighbor moves. Without \textit{Merge Split}, it only can reach 5300+ in \textit{egl-s1-A}. 
+
+
+
+
+
+
+
+
+
+% trigger a \newpage just before the given reference
+% number - used to balance the columns on the last page
+% adjust value as needed - may need to be readjusted if
+% the document is modified later
+%\IEEEtriggeratref{8}
+% The "triggered" command can be changed if desired:
+%\IEEEtriggercmd{\enlargethispage{-5in}}
+
+% references section
+
+% can use a bibliography generated by BibTeX as a .bbl file
+% BibTeX documentation can be easily obtained at:
+% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
+% The IEEEtran BibTeX style support page is at:
+% http://www.michaelshell.org/tex/ieeetran/bibtex/
+\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+%\bibliography{IEEEabrv,../bib/paper}
+%
+% <OR> manually copy in the resultant .bbl file
+% set second argument of \begin to the number of references
+% (used to reserve space for the reference number labels box)
+\begin{thebibliography}{1}
+\bibitem{Eiselt} H. Eiselt, M. Gendreau and G. Laporte, Arc routing. Montreal: Centre de recherche sur les transports, Universite de Montreal, 1992.
+\bibitem{Brandao} Brandao J, Eglese R. A deterministic tabu search algorithm for the capacitated arc routing problem. Computer \& Operations Research. 2008 Apr 1;35(4):1112-26.
+\bibitem{Pearn} Pearn WL. Approximate solutions for the capacitated arc routing problem. Computers \& Operations Research. 1989 Jan 1;16(6):589-600.
+\end{thebibliography}
+
+
+
+
+
+% that's all folks
+\end{document}
+
+
