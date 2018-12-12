@@ -50,7 +50,18 @@ def read_social_network_graph(file_name):
                 
     return Graph(vertices, edges, adj_list, adj_list_rev, edge_weight)
 
-def cnt_nodes(R: list):
+# def cnt_nodes(R: list):
+#     node_edges = dict()
+#     for i, RR in enumerate(R):
+#         for v in RR:
+#             if v in node_edges:
+#                 node_edges[v].add(i)
+#             else:
+#                 node_edges[v] = {i}
+#     return node_edges
+
+def node_selection(R: list, k: int):
+    S = set()
     node_edges = dict()
     for i, RR in enumerate(R):
         for v in RR:
@@ -58,11 +69,6 @@ def cnt_nodes(R: list):
                 node_edges[v].add(i)
             else:
                 node_edges[v] = {i}
-    return node_edges
-
-def node_selection(R: list, k: int):
-    S = set()
-    node_edges = cnt_nodes(R)
     max_heap = list()
     for key, value in node_edges.items():
         max_heap.append([-len(value), key, 0])
@@ -167,16 +173,16 @@ def IMM(graph: Graph, k: int, epsilon, l, mode):
     S = node_selection(R, k)[1]
     return S
     
-# def ISE(S, model, fn):
-#     print('''==================ISE TEST=================''')
-#     fw = 'IMP2018/seeds_out.txt'
-#     with open(fw, 'w') as fp:
-#         for s in S:
-#             fp.write('{s}\n'.format(s=s))
-#     if model == 'IC':
-#         os.system('python ISE.py -i {} -s {} -m IC -t 60'.format(fn, fw))
-#     elif model == 'LT':
-#         os.system('python ISE.py -i {} -s {} -m LT -t 60'.format(fn, fw))
+def ISE(S, model, fn):
+    print('''==================ISE TEST=================''')
+    fw = 'IMP2018/seeds_out.txt'
+    with open(fw, 'w') as fp:
+        for s in S:
+            fp.write('{s}\n'.format(s=s))
+    if model == 'IC':
+        os.system('python ISE.py -i {} -s {} -m IC -t 60'.format(fn, fw))
+    elif model == 'LT':
+        os.system('python ISE.py -i {} -s {} -m LT -t 60'.format(fn, fw))
 
 '''=============================================='''
 class Worker(mp.Process):
@@ -222,7 +228,7 @@ if __name__ == "__main__":
     graph = read_social_network_graph(parse_res.social_network)
 
     global worker_cnt
-    worker_cnt = 8
+    worker_cnt = 1
         
     global worker
     worker = []
@@ -230,9 +236,10 @@ if __name__ == "__main__":
     k = int(parse_res.seed_size)
     epsilon = 0.1
 
-    if graph.edges > 80000 and parse_res.time_budget <= 60:
+    time_budget = int(parse_res.time_budget)
+    if graph.vertices > 35000 and time_budget <= 60 and k >= 500:
         epsilon = 0.2
-        if parse_res.time_budget <= 30:
+        if time_budget <= 30:
             epsilon = 0.5
     
 
@@ -242,8 +249,9 @@ if __name__ == "__main__":
 
     for s in S:
         print(s)
-    # ISE(S, parse_res.diffusion_model, parse_res.social_network)
     finish_worker()
+    print(time.time() - curtime)
+    ISE(S, parse_res.diffusion_model, parse_res)
     sys.stdout.flush()
     os._exit(0)
 
