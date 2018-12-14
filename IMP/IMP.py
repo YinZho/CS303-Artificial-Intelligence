@@ -8,6 +8,7 @@ import argparse
 import numpy as np
 from collections import defaultdict
 import multiprocessing as mp
+
 '''
 1. Node index starts from 1
 2. The first line contains the number of nodes n and number of edges m

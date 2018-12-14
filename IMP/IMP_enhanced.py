@@ -50,16 +50,6 @@ def read_social_network_graph(file_name):
                 
     return Graph(vertices, edges, adj_list, adj_list_rev, edge_weight)
 
-# def cnt_nodes(R: list):
-#     node_edges = dict()
-#     for i, RR in enumerate(R):
-#         for v in RR:
-#             if v in node_edges:
-#                 node_edges[v].add(i)
-#             else:
-#                 node_edges[v] = {i}
-#     return node_edges
-
 def node_selection(node_edges: dict, R_len: int, k: int):
     S = set()
     max_heap = list()
@@ -163,13 +153,13 @@ def sampling(graph: Graph, k: int, epsilon, l, mode):
                     node_edges[key] |= value
                 else:
                     node_edges[key] = value
-        print("sampling", time.time() - curtime)
+        # print("sampling", time.time() - curtime)
 
         
         old_theta = theta 
         curtime = time.time()
         FR = node_selection(node_edges, theta, k)[0]
-        print("node selection", time.time() - curtime)
+        # print("node selection", time.time() - curtime)
         # print("FR", FR)
         if n * FR >= (1 + epsilon_prime) * x:
             LB = n * FR / (1 + epsilon_prime)
@@ -196,17 +186,6 @@ def IMM(graph: Graph, k: int, epsilon, l, mode):
     S = sampling(graph, k, epsilon, l, mode)
     
     return S
-    
-# def ISE(S, model, fn):
-#     print('''==================ISE TEST=================''')
-#     fw = 'IMP2018/seeds_out.txt'
-#     with open(fw, 'w') as fp:
-#         for s in S:
-#             fp.write('{s}\n'.format(s=s))
-#     if model == 'IC':
-#         os.system('python ISE.py -i {} -s {} -m IC -t 60'.format(fn, fw))
-#     elif model == 'LT':
-#         os.system('python ISE.py -i {} -s {} -m LT -t 60'.format(fn, fw))
 
 '''=============================================='''
 class Worker(mp.Process):
@@ -238,12 +217,22 @@ def finish_worker ():
     for w in worker:
         w.terminate()
 
+def ISE(S, model, fn):
+    # print('''==================ISE TEST=================''')
+    fw = 'IMP2018/seeds_out.txt'
+    with open(fw, 'w') as fp:
+        for s in S:
+            fp.write('{s}\n'.format(s=s))
+    if model == 'IC':
+        os.system('python ISE.py -i {} -s {} -m IC -t 60'.format(fn, fw))
+    elif model == 'LT':
+        os.system('python ISE.py -i {} -s {} -m LT -t 60'.format(fn, fw))
+
 '''=============================================='''
 
 
 if __name__ == "__main__":
     curtime = time.time()
-    random.seed(1)
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', dest='social_network' ,help='the absolute path of the social network file')
     parser.add_argument('-k', dest='seed_size', help='predefined size of the seed set')
@@ -262,22 +251,15 @@ if __name__ == "__main__":
     k = int(parse_res.seed_size)
     epsilon = 0.1
 
-    time_budget = int(parse_res.time_budget)
-    if graph.vertices > 35000 and time_budget <= 60 and k >= 500:
-        epsilon = 0.2
-        if time_budget <= 30:
-            epsilon = 0.5
-    
-
     l = 1
     model = parse_res.diffusion_model
     S = IMM(graph, k, epsilon, l, model)
-
-    for s in S:
-        print(s)
+    # for s in S:
+        # print(s)
     # 
     finish_worker()
-    print(time.time() - curtime)
-    # ISE(S, model, parse_res.social_network)
+    print("elapsed time", time.time() - curtime)
+    ISE(S, model, parse_res.social_network)
     sys.stdout.flush()
     os._exit(0)
+    

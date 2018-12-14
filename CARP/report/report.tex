@@ -503,119 +503,104 @@ According to the comparison of different algorithms in the \textit{Arc routing},
 
 
 \subsection{Detail of Algorithm}
-\subsubsection{Random Path Scanning}
-The \textit{Random Path Scanning} (PS) was proposed by Pearn \cite{Pearn}. He modified \textit{Path Scanning} by selecting one of five criteria at random to use when several requied edges are incident. Throwing away five criteria, I randomly pick one edge when more than one requied edges are incident in the experiment. However, I surprisingly found that it outperforms selecting criteria. The method is explained as follows.
+\subsubsection{Influence Spread Estimate}
+ Given the seed set $S$, the diffusion processes unfolds in discrete rounds as follow: At round 0, all nodes in $S$ are active and the others are inactive. In the subsequent rounds, the newly activated nodes will try to activate their neighbors. The process will stop when no more nodes get activated. 
+ There are two fundamental diffusion models are specified in this project including \textit{Independent Cascade} (IC) and \textit{Linear Threshold} (LT) .\\
+\noindent \textbf{Independent Cascade} When a node $u$ gets activated, initially or by another node, it has a single chance to activate each inactivate neighbor $v$ with the probability proportional to the edge weight $w(u, v)$.\\
+\noindent \textbf{Linear Threshold} At the beginning, each node $v$ selects a random threshold $\theta_v$ uniformly at random in range [0,1]. Since the second round, an inactive node $v$ becomes activated if $\sum{activated\; neighbors\;u} W(u,v) \geq \theta_v$. The weight of the edge $(u,v)$ equals $\dfrac{1}{d_{in}(v)}$.
+
 
 \begin{algorithm}[H]
-	\caption{Random Path Scanning}
+	\caption{Independent Cascade}
 	\begin{algorithmic}[1]
-		\Function{random\_path\_scanning}{}
-			\State $k = 0$ \Comment the index of route
-			\State copy all required arcs in a list
-			 \textit{free}
-			\Comment include both directions of an arc
-			\Repeat
-				\State $R_k \gets \emptyset ; load(k), cost{k} \gets 0; i \gets 1$
-				\Repeat
-				\State $\bar{d} \gets \infty$
-				\For{each $ $u$ \in free$}
-					\If{$d_{i,beg(u)} < \bar{d}$}
-					\State $\bar{d} \gets d_{i,beg(u)}$
-					\State $\bar{u} \gets u$
-					\ElsIf{$(d_{i,beg(u)} = \bar{d})$}
-						\If{$random.randint(0, 1) = 1$}
-						\State $\bar{u} = u$
-						\EndIf
-					\EndIf
-				\EndFor
-				\State add $\bar{u}$ at the end of route ${R_k}$
-				\State remove arc $\bar{u}$ from \textit{free}
-				\State remove reverse $\bar{u}$ from \textit{free}
-				\State $load[k] = load[k] + q_{\bar{u}}$
-				\State $cost[k] = cost[k] + \bar{d} + c_{\bar{u}}$
-				\State $ i = end(\bar{u})$
-				\Until{$\bar{d} = \infty$ or $load(k) + q_u > Q$}
-				\State $cost(k) \gets cost(k) + d_{i1}$ 
-				\State $k \gets k + 1$
-			\Until{$free = \emptyset$}
+		\Function{IC}{}
+		\State Initialoze ActivitySet=\{SeedSet\}
+		\State count = ActivitySet.length
+		\While{!ActivitySet.isEmpty()}
+		\State Set newAcitivitySet equals $\emptyset$ 
+		\For {each seed in AcitivitySet}
+		\For {each inactive neighbor in seed}
+		\State seed tries to activate neighbors with probability
+		\If{activated}
+		\State newActicitySet.add(neighbor)
+		\EndIf
+		\EndFor
+		\EndFor
+		\State count += newActivitySet.length
+		\State ActivitySet = newActivitySet
+		\EndWhile
+		\EndFunction
+		\State return count
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}[H]
+	\caption{Linear Threshold}
+\end{algorithm}
+
+
+\subsubsection{Influence Maximazation Problem}
+\begin{algorithm}[H]
+	\caption{IMM}
+	\begin{algorithmic}[1]
+		\Function{IMM}{}
+			\State $l = l \cdot (1 + \log(2)/\log(n)$
+			\State $R = $ Sampling ($G,k,\epsilon,l$)
+			\State $S_k = $ NodeSelection ($R,k$)
+		\EndFunction	
+	\end{algorithmic}
+\end{algorithm}
+
+
+	
+\begin{algorithm}[H]
+	\caption{Sampling}
+	\begin{algorithmic}[1]
+		\Function{Sampling}{$G,k,\epsilon,l$}
+		\State Initialize a set $R = \emptyset$ and an integer $LB = 1$
+		\State Let $\prime{\epsilon} = \sqrt{2} \cdot \epsilon$ 
+		\For{$i = 1$ to $\log_2 n$}
+			\State $x = n/2^i$
+			\State $\theta_i = \lambda\prime / x$, where $\lambda\prime$ is as defined in equation 1
+			\While{$\|{R}\| \leq \theta_i$}
+			\State Select a node $v$ from $G$ uniformly at random
+			\State Generate an RR set for $v$, and insert it into $R$
+			\EndWhile
+			\State Let $S_i = $ NodeSelection($R$)
+			\If {$n \cdot F+R(S_i) \geq (1 + \epsilon\prime) \cdot x$}
+			\State $LB = n \cdot F_R(S_i)/(1+\epsilon\prime)$ 
+			\State \textbf{break}
+			\EndIf	
+		\EndFor
+		\State Let $\theta = \lambda^\ast/LB$, where $\lambda^\ast$ is as defined as in Equation 2
+		\EndFunction		
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+	\caption{NodeSelection}
+	\begin{algorithmic}[1]
+		\Function{NodeSelection}{$R,k$}
+		\State Initialize a node set $S_k = \emptyset$
+		\For{$i = 1$ to $k$}
+		\State Identify the vertex $v$ that maximizes $F_R(S_k \cup v) - F_R$
+		\State Insert $v$ into $S_k$
+		\EndFor
 		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 
-The loop (6-24) builds successive routes $R_k$. When searching for next arc, if the demand of the nearest required service in \textit{free} exceeds the capacity Q that the vehicle can load, the vehicle will back to depot directly, which means a vehicle in a route will not as full as possible. The lines(13-14) means when traversing a minimum edge is incident, it will randomly be selected or discarded.
-\subsubsection{Heuristic Tabu Search}
-\begin{enumerate}
-	\item \textbf{Neighbourhood moves}\\
-	the TSA is based on three types of neighbourhood move consisting of \textit{Single Insertion}, \textit{Double Insertion} and \textit{Swap}. I add one more type called \textit{Merge Split}.
-	\begin{enumerate}
-		\item \textit{Single Insertion}\\
-		In a single insertion move, an edge from a route is removed from its current route and a insertion is made in any other route between any two serviced edges no mather they are adjacent or not, including the beginning and end of the route connecting with depot. The trail insertion considers both directions for the edge inserted in the new route.
-		\item \textit{Double Insertion}\\
-		In a double insertion move, the operation is similar except that a candidate consists of two connected requeired edges in one route no mather whether there is a deadheading path between two connected edges in a route.
-		\item \textit{Swap}\\
-		In a swap operation, swapping any two edges from any two different routes.
-		\item \textit{Merge Split}\\
-		The merge split move is picking any two routes and using random path scanning to build another completely new routes set, which substitude the original two routes. 
-		
-	\end{enumerate}
-	\item \textbf{Objective function}\\
-	  The objective function to be minimised by the TSA, and it is described as follows:\\
-	  \\
-	  for a successive route i:
-	  \begin{align*}
-	  f(i) = cost(i) + P * w(i) \\
-	  w(i) = max(x(i)-1, 0)
-	  \end{align*}
-	  for a CARP problem solution:
-	  \begin{align*}
-	  F = max(f(i)) \forall i \in routes
-	  \end{align*}
-	
-	The parameter P is set 1 initially, and is then halfed if all solutions are feasible for 5 consecutive iteration; it is doubled if all solutions are infeasible for 5 consecutive iteration. Since time limition of this project, the solution gets far awy is not affordable, so the parameter P will be set to 2 if P exceeds 64 and current solution will be set to best feasible solution for the current record.
-	
-	\item \textbf{Tabu list}\\
-	\textit{Tabu list}, a set of solution or any else that be banned and seen as inaddmissible moves as neighbour. It can avoid falling into local optimum on finding global optimal iterations. In this project, I put the cost of searched optimal neighbors in the tabu list for two reasons: The probability of more than one solutions identical costs can be ignored; recording a set of banned solution is memory costing and it is time consuming when judging a solution is banned or not.
-	
-	\begin{algorithm}
-		\caption{Tabu\_solver}
-		\begin{algorithmic}[1]
-			\Function{run}{{time\_limit}}
-			\State Set starting time, $t = time.time()$
-			\State Set iteration counter, $k = 0$
-			\State Set current solution S to be an initial solution and let $f(S)$ to be the objective function value of $S$
-			\State Set the best feasible solition $S_{BF} = S$ and let $f(S_{BF}) = f(S)$ 
-			\State Set number of consecutive iterations that solution is feasivle, $k_F = 0$
-			\State Set number of consecutive iterations that solution is infeasible, $k_I = 0$
-			\State Set tabu tenure, $t = N / 2$, N is the number of required edges
-			\State Set penalty parameter, $P = 1$
-			\State Empty \textit{tabu\_list}	
-			\Repeat
-			\State Update tabu list and remove expired solutions
-			\State Find neighbourhood move $S\prime$ from $S$, set $f(S\prime) = \infty$
-			\For{each neighbourhood move $s$ $\notin$ \textit{tabu\_list}}
-			\If{$f(s) < f(S\prime)$} $S\prime = s$ and $f(S\prime) = f(s)$ 
-			\EndIf
-			\If{$s$ is feasible and $f(s) < f(S_{BF})$} $S_{BF} = s$ and $f(S_{BF}) = f(s)$
-			\EndIf	
-			\EndFor
-			\State Set $S = S\prime$ and $f(S) = f(S\prime)$
-			\State add $S\prime$ to \textit{tabu\_list}
-			\State $k = k + 1$
-			\If{$S\prime$ is feasible} $k_F = k_F + 1$
-			\Else\;$k_I = k_I + 1$
-			\EndIf
-			\If{$k_F = 5$} $P = P / 2$
-			\EndIf
-			\If{$k_I = 5$} $P = P * 2$
-			\EndIf
-			\If{$k_F = 5$ or $k_I = 5$} $k_F = 0$ and $k_I = 0$
-			\EndIf
-			\Until{$time.time() - t > time\_limit - 1$}
-		\EndFunction			
-		\end{algorithmic}
-	\end{algorithm}
-\end{enumerate}
-\section{Empirical Verification}
+\begin{equation}
+\lambda\prime = \dfrac{(2 + \dfrac{2}{3}\epsilon\prime) \cdot (\log\binom{n}{k}) + l \cdot \log n + \log \log_2 n) \cdot n}{\epsilon\prime^2}
+\end{equation}
+\begin{equation}
+\lambda^\ast = 2n \cdot ((1-1/e)\cdot\alpha+\beta)^2\cdot\epsilon^{-2}
+\end{equation}
+\begin{equation}
+\alpha = \sqrt{l\log n + \log 2}
+\end{equation}
+\begin{equation}
+\beta = \sqrt{(1 - 1/e) \cdot (\log\binom{n}{k} + l\log n + log 2)}
+\end{equation}
 
 \subsection{Dataset}
 \begin{itemize}
