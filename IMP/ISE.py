@@ -60,12 +60,23 @@ def LT_model(time_budget):
     last_time = 0
     while True:
         startime = time.time()
+<<<<<<< HEAD
         if time.time() - curtime + last_time > time_budget - 1 or N >= 10000/workers:
             break
 
         activity_set = seed_set
         thresholds = [0 for i in range(graph.vertices+1)]
         isActive = set()
+=======
+        if time.time() - curtime + last_time > time_budget - 1 or N >= 10000:
+            break
+
+        activity_set = copy.deepcopy(seed_set)
+        thresholds = [0 for i in range(graph.vertices+1)]
+        isActive = [False for i in range(graph.vertices+1)]
+
+        # initialize threshold
+>>>>>>> 754c2746f996b4544e0ad6eead168a27f4492f5a
         for i in range(len(thresholds)):          
             if i == 0:
                 thresholds[i] = math.inf
@@ -74,7 +85,14 @@ def LT_model(time_budget):
                 thresholds[i] = rand_num
                 if rand_num == 0:
                     activity_set.append(i)
+<<<<<<< HEAD
         count = len(activity_set)         
+=======
+
+        count = len(activity_set)   
+
+        # initialize isActive      
+>>>>>>> 754c2746f996b4544e0ad6eead168a27f4492f5a
         for e in activity_set:
             isActive.add(e)             
         while activity_set:
@@ -90,7 +108,11 @@ def LT_model(time_budget):
                             isActive.add(u)
                             new_activity_set.append(u)
             count += len(new_activity_set)
+<<<<<<< HEAD
             activity_set = new_activity_set
+=======
+            activity_set = copy.deepcopy(new_activity_set)
+>>>>>>> 754c2746f996b4544e0ad6eead168a27f4492f5a
 
         N += 1
         sum += count 
@@ -105,8 +127,16 @@ def IC_model(time_budget):
     last_time = 0
     while True:
         startime = time.time()
+<<<<<<< HEAD
         if time.time() - curtime + last_time > time_budget - 1 or N >= 10000/workers:
             break
+=======
+        if time.time() - curtime + last_time > time_budget - 1 or N >= 10000:
+            break
+
+        activity_set = copy.deepcopy(seed_set)
+        isActive = [False for i in range(graph.vertices)]
+>>>>>>> 754c2746f996b4544e0ad6eead168a27f4492f5a
 
         activity_set = seed_set
         isActive = set()
@@ -151,6 +181,7 @@ if __name__ == "__main__":
     graph = read_social_network_graph(parse_res.social_network)
 
     if parse_res.diffusion_model == 'IC':
+<<<<<<< HEAD
         with Pool(workers) as p:
             res = p.map(IC_model, [int(parse_res.time_budget) - (time.time() - curtime) for i in range(workers)]) 
             print(sum(res) / workers)
@@ -161,4 +192,11 @@ if __name__ == "__main__":
     # print(time.time() - curtime)
     sys.stdout.flush()
     os._exit(0)
+=======
+        print(str(IC_model(graph, int(parse_res.time_budget) - (time.time() - curtime))))
+    elif parse_res.diffusion_model == 'LT':
+        print(str(LT_model(graph, int(parse_res.time_budget) - (time.time() - curtime))))
+    
+    
+>>>>>>> 754c2746f996b4544e0ad6eead168a27f4492f5a
     
