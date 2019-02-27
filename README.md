@@ -7,3 +7,5 @@ good reference:
 data instances:
 * [Benchmarks](Benchmarks)
 ## Project.3 Influence Maximization Problem
+paper reference:
+* [Influence Maximization in Near-Linear Time: A Martingale Approach](https://dl.acm.org/citation.cfm?id=2723734)
