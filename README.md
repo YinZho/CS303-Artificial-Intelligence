@@ -14,9 +14,3 @@ paper reference:
 
 reference: details are in SVM directory.
 
-
-
-
-
-![1551709707379](/home/yinzho/.config/Typora/typora-user-images/1551709707379.png)
-
