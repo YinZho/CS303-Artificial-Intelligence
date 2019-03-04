@@ -9,3 +9,14 @@ data instances:
 ## Project.3 Influence Maximization Problem
 paper reference:
 * [Influence Maximization in Near-Linear Time: A Martingale Approach](https://dl.acm.org/citation.cfm?id=2723734)
+
+## Project.4 Support Vector Machine
+
+reference: details are in SVM directory.
+
+
+
+
+
+![1551709707379](/home/yinzho/.config/Typora/typora-user-images/1551709707379.png)
+
