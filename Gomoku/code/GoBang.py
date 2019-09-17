@@ -395,13 +395,13 @@ level_score = {'LevelOne': 100000000,
                'LevelThirteen': 2,
                'LevelFourteen': 1}
 pattern_score = {'WIN5': 10000000,
-                 'ALIVE4': 100000,
-                 'RUSH4': 10000,
-                 'ALIVE3': 8000,
-                 'TIAO3': 5500,
-                 'SLEEP3': 1000,
-                 'ALIVE2': 2505,
-                 'SLEEP2': 100
+                 'ALIVE4': 300000,
+                 'RUSH4': 50000,
+                 'ALIVE3': 30000,
+                 'TIAO3': 25050,
+                 'SLEEP3': 18000,
+                 'ALIVE2': 17000,
+                 'SLEEP2': 1000
                  }
 
 
