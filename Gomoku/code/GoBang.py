@@ -267,13 +267,21 @@ class Status:
             elif (value['RUSH4'] >= 1 and value['SLEEP3'] >= 1) or (value['RUSH4'] >= 1 and value['TIAO3'] >= 1) or (
                     value['SLEEP3'] >= 1 and value['ALIVE2'] >= 4):
                 score[key] += level_score['LevelFour']
-            elif value['RUSH4'] >= 1:
-                score[key] += level_score['LevelFive']
+            # elif value['RUSH4'] >= 1:
+            #     score[key] += level_score['LevelFive']
+            # elif value['TIAO3'] + value['SLEEP3'] >= 2:
+            #     score[key] += level_score['LevelSix']
+            # elif value['ALIVE2'] >= 2:
+            #     score[key] += level_score['LevelSeven']
+            # elif value['ALIVE3'] >= 1:
+            #     score[key] += level_score['LevelEight']
             elif value['TIAO3'] + value['SLEEP3'] >= 2:
-                score[key] += level_score['LevelSix']
+                score[key] += level_score['LevelFive']
             elif value['ALIVE2'] >= 2:
-                score[key] += level_score['LevelSeven']
+                score[key] += level_score['LevelSix']
             elif value['ALIVE3'] >= 1:
+                score[key] += level_score['LevelSeven']
+            elif value['RUSH4'] >= 1:
                 score[key] += level_score['LevelEight']
             elif value['SLEEP3'] >= 1 or value['TIAO3'] >= 1:
                 score[key] += level_score['LevelNine']
@@ -325,16 +333,58 @@ class AI(object):
                 self.history_status.update_score([7, 7])
                 self.history_status.update_new_scope([7, 7])
             else:
-                pos = np.where(self.history_status.chessboard != chessboard)
-                opponent_pos = [pos[0][0], pos[1][0]]
-                self.history_status.chessboard[opponent_pos[0], opponent_pos[1]] = -self.color
-                self.history_status.update_score(opponent_pos)
-                self.history_status.update_new_scope(opponent_pos)
-                self.game_tree.minimax(self.history_status, DEPTH, -math.inf, math.inf, self.candidate_list, self.color)
-                # print()
-                self.history_status.chessboard[self.candidate_list[-1][0], self.candidate_list[-1][1]] = self.color
-                self.history_status.update_score(self.candidate_list[-1])
-                self.history_status.update_new_scope(self.candidate_list[-1])
+                if self.color == -1 and chessboard[6, 6] == 0:
+                    self.candidate_list.append([6, 6])
+                    pos = np.where(self.history_status.chessboard != chessboard)
+                    opponent_pos = [pos[0][0], pos[1][0]]
+                    self.history_status.chessboard[opponent_pos[0], opponent_pos[1]] = -self.color
+                    self.history_status.update_score(opponent_pos)
+                    self.history_status.update_new_scope(opponent_pos)
+                    self.history_status.chessboard[6, 6] = self.color
+                    self.history_status.update_score([6, 6])
+                    self.history_status.update_new_scope([6, 6])
+                elif self.color == -1 and chessboard[6, 8] == 0:
+                    self.candidate_list.append([6, 8])
+                    pos = np.where(self.history_status.chessboard != chessboard)
+                    opponent_pos = [pos[0][0], pos[1][0]]
+                    self.history_status.chessboard[opponent_pos[0], opponent_pos[1]] = -self.color
+                    self.history_status.update_score(opponent_pos)
+                    self.history_status.update_new_scope(opponent_pos)
+                    self.history_status.chessboard[6, 8] = self.color
+                    self.history_status.update_score([6, 8])
+                    self.history_status.update_new_scope([6, 8])
+                elif self.color == -1 and chessboard[8, 6] == 0:
+                    self.candidate_list.append([8, 6])
+                    pos = np.where(self.history_status.chessboard != chessboard)
+                    opponent_pos = [pos[0][0], pos[1][0]]
+                    self.history_status.chessboard[opponent_pos[0], opponent_pos[1]] = -self.color
+                    self.history_status.update_score(opponent_pos)
+                    self.history_status.update_new_scope(opponent_pos)
+                    self.history_status.chessboard[8, 6] = self.color
+                    self.history_status.update_score([8, 6])
+                    self.history_status.update_new_scope([8, 6])
+                elif self.color == -1 and chessboard[8, 8] == 0:
+                    self.candidate_list.append([8, 8])
+                    pos = np.where(self.history_status.chessboard != chessboard)
+                    opponent_pos = [pos[0][0], pos[1][0]]
+                    self.history_status.chessboard[opponent_pos[0], opponent_pos[1]] = -self.color
+                    self.history_status.update_score(opponent_pos)
+                    self.history_status.update_new_scope(opponent_pos)
+                    self.candidate_list.append([8, 8])
+                    self.history_status.chessboard[8, 8] = self.color
+                    self.history_status.update_score([8, 8])
+                    self.history_status.update_new_scope([8, 8])
+                else:
+                    pos = np.where(self.history_status.chessboard != chessboard)
+                    opponent_pos = [pos[0][0], pos[1][0]]
+                    self.history_status.chessboard[opponent_pos[0], opponent_pos[1]] = -self.color
+                    self.history_status.update_score(opponent_pos)
+                    self.history_status.update_new_scope(opponent_pos)
+                    self.game_tree.minimax(self.history_status, DEPTH, -math.inf, math.inf, self.candidate_list, self.color)
+                    # print()
+                    self.history_status.chessboard[self.candidate_list[-1][0], self.candidate_list[-1][1]] = self.color
+                    self.history_status.update_score(self.candidate_list[-1])
+                    self.history_status.update_new_scope(self.candidate_list[-1])
 
         else:
             self.history_status.chessboard = chessboard
@@ -381,7 +431,7 @@ chess_pattern = {'0111110': 'WIN5',
                  }
 
 level_score = {'LevelOne': 100000000,
-               'LevelTwo': 100000,
+               'LevelTwo': 1000000,
                'LevelThree': 10000,
                'LevelFour': 8000,
                'LevelFive': 5000,
